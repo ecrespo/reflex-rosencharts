@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
 import { scaleTime, scaleLinear, max, line as d3_line } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "../helpers/ClientTooltip";
+import { ClientTooltip, TooltipContent, TooltipTrigger } from "../../helpers/client_tooltip/ClientTooltip";
 
 /* Original component: https://buildui.com/recipes/responsive-line-chart
  * Ported from rosencharts (MIT, Filsommer). Data is now a prop. */
