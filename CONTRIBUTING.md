@@ -1,55 +1,84 @@
 # Contribuir — Receta de port (rosencharts → Reflex)
 
-Patrón repetible para portar cada gráfica. Detalle en
+Patrón **probado** (validado end-to-end con el piloto `line_chart`, compila con
+`reflex export`). Detalle de diseño en
 [`specs/technical/architecture.md`](specs/technical/architecture.md) §5.2.
 
-## Pasos por gráfica
+## Layout de assets (importante)
 
-1. **Copiar** `reference/rosencharts/<familia>/<n>_<Name>.tsx`
+`rx.asset("x.tsx", shared=True)` copia el archivo a
+`public/external/<módulo_python_punteado_como_dirs>/x.tsx`. Es decir, el módulo
+`reflex_rosencharts.components.line.line_chart` deja su TSX en
+`external/reflex_rosencharts/components/line/line_chart/line_chart.tsx`.
+
+Como **toda** gráfica vive en `components/<familia>/<name>.py` (asset = `<name>.tsx`),
+su TSX queda en `.../components/<familia>/<name>/<name>.tsx`, y el helper compartido
+en `.../components/helpers/client_tooltip/ClientTooltip.tsx`. Por eso la ruta relativa
+al helper es **constante para todas las gráficas**:
+
+```tsx
+import { ClientTooltip, TooltipTrigger, TooltipContent } from "../../helpers/client_tooltip/ClientTooltip";
+```
+
+## Pasos por gráfica (TDD)
+
+1. **RED** — `tests/test_<familia>.py`: la función existe, es importable, `.create(data=...)`
+   construye un `rx.Component`, y el default reproduce el ejemplo. Corre el test y velo fallar.
+2. **Copiar** `reference/rosencharts/<familia>-charts/<n>_<Name>.tsx`
    → `reflex_rosencharts/components/<familia>/<name>.tsx`.
-2. **Parametrizar datos**: sustituir el `data` hardcodeado por una prop con default igual al
-   ejemplo original:
+3. **Parametrizar datos**: sustituir el array hardcodeado por una prop con default = ejemplo:
    ```tsx
-   export function LineChart({ data = DEFAULT_DATA, color = "stroke-fuchsia-400" }) { ... }
+   const defaultData = [ ...ejemplo original... ];
+   export function ChartName({ data = defaultData, color = "..." }: {...}) {
+     if (data.length === 0) return <div className="relative h-72 w-full" />;
+     // ... mapear/escalas a partir de `data`
+   }
    ```
-3. **Ajustar imports** del helper a la ruta local (`./helpers/ClientTooltip` o relativa).
-4. **Wrapper Python** (`<name>.py`):
+4. **Ajustar import del helper** (sólo si usa tooltip) a la ruta constante de arriba.
+5. **Wrapper Python** (`<name>.py`):
    ```python
-   import reflex as rx
    from typing import TypedDict
+   import reflex as rx
+   from ..helpers.client_tooltip import client_tooltip_asset  # sólo si usa tooltip
 
    class LinePoint(TypedDict):
        date: str
        value: float
 
-   _path = rx.asset("./line_chart.tsx", shared=True)
+   _DEFAULT_DATA: list[LinePoint] = [ ...ejemplo... ]
 
-   class LineChart(rx.Component):          # NoSSRComponent si usa portal/tooltip
-       library = f"$/public{_path}"
-       tag = "LineChart"
+   client_tooltip_asset()                       # sólo si usa tooltip (lo hace viajar)
+   _PATH = rx.asset("line_chart.tsx", shared=True)
+
+   class LineChart(rx.NoSSRComponent):          # NoSSRComponent si usa portal/tooltip; rx.Component si no
+       library = f"$/public{_PATH}"
+       tag = "LineChart"                         # == nombre exportado en el TSX
        is_default = False
-       data: rx.Var[list[LinePoint]] = rx.Var.create([])
+       lib_dependencies: list[str] = ["d3"]      # si el TSX importa de "d3"
+       data: rx.Var[list[LinePoint]] = rx.Var.create(_DEFAULT_DATA)
        color: rx.Var[str] = rx.Var.create("stroke-fuchsia-400")
-       on_point_hover: rx.EventHandler[rx.event.passthrough_event_spec(dict)]
 
    def line_chart(**props) -> rx.Component:
        return LineChart.create(**props)
    ```
-5. **Re-exportar** en `components/<familia>/__init__.py` y en `reflex_rosencharts/__init__.py`.
-6. **Ejemplo** en la galería (`reflex_rosencharts/reflex_rosencharts.py`).
-7. **Tests**: import + render; **comparación visual** por captura contra `reference/`.
+6. **Re-exportar** en `components/<familia>/__init__.py` y en `reflex_rosencharts/__init__.py`.
+7. **Entrada de galería** en `components/<familia>/gallery.py` (lista `GALLERY_ENTRIES`); el
+   registry central la recoge sin tocar archivos compartidos.
+8. **GREEN** — corre el test y velo pasar. Refactor manteniendo verde. Commit.
 
 ## Reglas
 
 - Nombre Python en `snake_case`; quitar sufijo `_DIV` (técnica de render, va en el docstring).
-- `data` vacío ⇒ render vacío, nunca lanzar excepción.
+- `tag` debe coincidir EXACTAMENTE con el nombre `export function <Tag>` del TSX.
+- `data` vacío ⇒ render de contenedor vacío, nunca lanzar excepción.
 - Conservar variantes `dark:` de Tailwind.
 - Cada variante con campos extra define su propio `TypedDict` (ver Data Model §4).
+- Gráficas SIN tooltip: usar `rx.Component` (no NoSSR) y omitir `client_tooltip_asset()`.
 
 ## Definición de Done (por gráfica)
 
-- [ ] Wrapper + TSX parametrizado + re-export
-- [ ] Ejemplo en galería
-- [ ] Tests verdes y compila en build de Reflex
-- [ ] Paridad visual revisada
+- [ ] Test TDD verde (import + render + default)
+- [ ] Wrapper + TSX parametrizado + re-export en ambos `__init__`
+- [ ] Entrada en `components/<familia>/gallery.py`
+- [ ] Compila en `reflex export`
 - [ ] Docstring con esquema de datos y snippet
