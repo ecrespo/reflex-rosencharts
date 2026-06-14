@@ -1,9 +1,19 @@
 [project]
 name = "reflex-rosencharts"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.1"
+description = "A Reflex custom component port of the rosencharts charting library (D3.js + Tailwind), usable from pure Python."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "reflex>=0.9.5.post2",
 ]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["reflex_rosencharts*"]
+
+[tool.setuptools.package-data]
+"reflex_rosencharts" = ["**/*.tsx", "**/*.ts", "**/*.js", "**/*.jsx", "**/*.css"]

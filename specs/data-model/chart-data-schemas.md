@@ -1,57 +1,57 @@
-# reflex-rosencharts — Data Model (esquemas de datos de las gráficas)
+# reflex-rosencharts — Data Model (chart data schemas)
 
 ## Metadata
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **Autor** | Ernesto Crespo |
-| **Estado** | `DRAFT` |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-06-14 |
+| **Author** | Ernesto Crespo |
+| **Status** | `DRAFT` |
+| **Version** | 1.0 |
+| **Date** | 2026-06-14 |
 | **Tech Design** | [../technical/architecture.md](../technical/architecture.md) |
 | **API Spec** | [../api/component-api-v1.md](../api/component-api-v1.md) |
 
 ---
 
-> **Nota de adaptación SDD:** No hay base de datos. El "modelo de datos" de esta librería son los
-> **esquemas de entrada** de cada gráfica: la forma del `data` que el desarrollador pasa desde
-> `rx.State`. Se definen como `TypedDict` (interop directo con la estructura JS que espera el TSX).
-> Donde Reflex deba convertir a camelCase, se usará `rx.PropsBase`.
+> **SDD adaptation note:** There is no database. The "data model" of this library is made up of the
+> **input schemas** of each chart: the shape of the `data` that the developer passes from
+> `rx.State`. They are defined as `TypedDict` (direct interop with the JS structure that the TSX expects).
+> Where Reflex must convert to camelCase, `rx.PropsBase` will be used.
 
-## 1. Principios
+## 1. Principles
 
-- **Fidelidad con el original:** los nombres de campo replican los del TSX de rosencharts (p. ej.
-  bar usa `key`, pie/donut usan `name`, scatter usa `revenue`/`value`/`company`).
-- **Fechas como string ISO:** las series temporales reciben `date: "YYYY-MM-DD"`; el TSX las convierte
-  con `new Date(...)` (como hace el original), evitando problemas de serialización Python↔JS.
-- **Números como `float`/`int`:** sin `Decimal` (no es dato financiero transaccional, sólo visual).
-- **Defaults = dataset del ejemplo original** (ver Tech Design DD-002).
+- **Fidelity to the original:** field names replicate those of the rosencharts TSX (e.g.
+  bar uses `key`, pie/donut use `name`, scatter uses `revenue`/`value`/`company`).
+- **Dates as ISO strings:** time series receive `date: "YYYY-MM-DD"`; the TSX converts them
+  with `new Date(...)` (as the original does), avoiding Python↔JS serialization problems.
+- **Numbers as `float`/`int`:** no `Decimal` (this is not transactional financial data, only visual).
+- **Defaults = dataset from the original example** (see Tech Design DD-002).
 
-## 2. Esquemas base
+## 2. Base schemas
 
 ```python
 from typing import TypedDict
 
-# Serie temporal (line, area)
+# Time series (line, area)
 class TimePoint(TypedDict):
     date: str      # 'YYYY-MM-DD'
     value: float
 
-# Categoría/valor (pie, donut)
+# Category/value (pie, donut)
 class CategoryValue(TypedDict):
     name: str
     value: float
 
-# Barra (bar charts) — el original usa la clave `key`
+# Bar (bar charts) — the original uses the `key` key
 class BarItem(TypedDict):
     key: str
     value: float
 
-# Punto de dispersión (scatter) — nombres del original
+# Scatter point (scatter) — names from the original
 class ScatterPoint(TypedDict):
-    revenue: float     # eje X
-    value: float       # eje Y
-    company: str       # etiqueta
+    revenue: float     # X axis
+    value: float       # Y axis
+    company: str       # label
 
 # Radar
 class RadarPoint(TypedDict):
@@ -69,42 +69,42 @@ class TreemapNode(TypedDict):
     subtopics: list[dict]   # p.ej. [{"Windows": 100, "MacOS": 120, "Linux": 110}]
 ```
 
-## 3. Mapeo gráfica → esquema
+## 3. Chart → schema mapping
 
-| Familia | Gráficas | Esquema de `data` | Notas |
+| Family | Charts | `data` schema | Notes |
 |---|---|---|---|
-| Area | area_chart, area_chart_full, area_chart_gradient, area_chart_semi_filled | `list[TimePoint]` | Igual que line |
+| Area | area_chart, area_chart_full, area_chart_gradient, area_chart_semi_filled | `list[TimePoint]` | Same as line |
 | Line (simple) | line_chart, line_chart_curved, line_chart_labels_curved, line_chart_step, line_chart_pulse, line_chart_full | `list[TimePoint]` | — |
-| Line (stocks) | line_chart_stocks_curved | `list[TimePoint]` | Formato de eje tipo bolsa |
-| Line (múltiple) | line_chart_multiple | `list[list[TimePoint]]` o props `data`, `data2` | Varias series (el original usa `sales`, `sales2`) |
-| Bar (DIV/SVG) | las 12 bar_* | `list[BarItem]` | `key`+`value`; breakdown/benchmark añaden campos extra (ver §4) |
-| Pie/Donut | pie_*, donut_* | `list[CategoryValue]` | `name`+`value`; paleta vía `colors` |
+| Line (stocks) | line_chart_stocks_curved | `list[TimePoint]` | Stock-style axis format |
+| Line (multiple) | line_chart_multiple | `list[list[TimePoint]]` or `data`, `data2` props | Several series (the original uses `sales`, `sales2`) |
+| Bar (DIV/SVG) | the 12 bar_* | `list[BarItem]` | `key`+`value`; breakdown/benchmark add extra fields (see §4) |
+| Pie/Donut | pie_*, donut_* | `list[CategoryValue]` | `name`+`value`; palette via `colors` |
 | Scatter | scatter_chart, scatter_chart_stocks | `list[ScatterPoint]` | `revenue`(x), `value`(y), `company` |
-| Scatter multiclass | scatter_chart_multiclass | `list[ScatterPoint]` + `class` | Campo de clase para color |
-| Scatter interactivo | scatter_chart_interactive | `list[ScatterPoint]` | Emite `on_point_click` |
-| Treemap | treemap_chart, treemap_chart_images, treemap_chart_gradient | `list[TreemapNode]` | Anidado; images añade `img` por nodo |
+| Scatter multiclass | scatter_chart_multiclass | `list[ScatterPoint]` + `class` | Class field for color |
+| Scatter interactive | scatter_chart_interactive | `list[ScatterPoint]` | Emits `on_point_click` |
+| Treemap | treemap_chart, treemap_chart_images, treemap_chart_gradient | `list[TreemapNode]` | Nested; images adds `img` per node |
 | Radar | radar_chart, radar_chart_rounded | `list[RadarPoint]` | `topic`+`value` |
-| Other | bubble_chart | `list[ScatterPoint]` + `size` | Burbuja = scatter con radio |
-| Other | funnel_chart | `list[FunnelStage]` | Etapas ordenadas |
+| Other | bubble_chart | `list[ScatterPoint]` + `size` | Bubble = scatter with radius |
+| Other | funnel_chart | `list[FunnelStage]` | Ordered stages |
 
-## 4. Variantes con campos adicionales
+## 4. Variants with additional fields
 
-Algunas gráficas extienden el esquema base. Se documentarán con precisión al portarlas; previsión:
+Some charts extend the base schema. They will be documented precisely when ported; expected:
 
-| Gráfica | Campos extra (previstos) |
+| Chart | Extra fields (expected) |
 |---|---|
-| bar_chart_breakdown / bar_chart_thin_breakdown | series apiladas: `value` por segmento o lista de segmentos |
-| bar_chart_benchmark | `value` + `benchmark` (línea de referencia) |
-| bar_chart_line | `value` (barra) + `line` (serie superpuesta) |
-| bar_chart_horizontal_logo / *_flags_* | `key`, `value` + `logo`/`flag` (URL de imagen) |
-| treemap_chart_images | nodos con `img` (URL) |
-| donut_chart_center_text | `data` + prop `center_text` |
-| donut_chart_fillable / *_half | `value` (0–100) de relleno |
+| bar_chart_breakdown / bar_chart_thin_breakdown | stacked series: `value` per segment or list of segments |
+| bar_chart_benchmark | `value` + `benchmark` (reference line) |
+| bar_chart_line | `value` (bar) + `line` (overlaid series) |
+| bar_chart_horizontal_logo / *_flags_* | `key`, `value` + `logo`/`flag` (image URL) |
+| treemap_chart_images | nodes with `img` (URL) |
+| donut_chart_center_text | `data` + `center_text` prop |
+| donut_chart_fillable / *_half | `value` (0–100) for fill |
 
-> Regla: cada variante define su `TypedDict` propio (extendiendo el base) en el módulo de la gráfica,
-> y lo referencia el API Spec correspondiente.
+> Rule: each variant defines its own `TypedDict` (extending the base one) in the chart's module,
+> and the corresponding API Spec references it.
 
-## 5. Ejemplos por esquema (defaults del original)
+## 5. Examples per schema (original defaults)
 
 ```python
 # TimePoint (line/area)
@@ -126,19 +126,19 @@ Algunas gráficas extienden el esquema base. Se documentarán con precisión al 
 [{"topic": "Tech", "subtopics": [{"Windows": 100, "MacOS": 120, "Linux": 110}]}]
 ```
 
-## 6. Validación
+## 6. Validation
 
-| Regla | Cómo se aplica |
+| Rule | How it is applied |
 |---|---|
-| Tipos de campo | Tipado estático con `TypedDict` + `rx.Var[list[Schema]]` (compilación Reflex) |
-| Lista vacía | Permitida → render de estado vacío |
-| Claves desconocidas | Ignoradas por el TSX (sólo lee las que usa) |
-| Fechas | String ISO; conversión a `Date` en el cliente |
+| Field types | Static typing with `TypedDict` + `rx.Var[list[Schema]]` (Reflex compilation) |
+| Empty list | Allowed → empty-state render |
+| Unknown keys | Ignored by the TSX (it only reads the ones it uses) |
+| Dates | ISO string; conversion to `Date` on the client |
 
 ---
 
-## Historial de Cambios
+## Change History
 
-| Versión | Fecha | Autor | Cambios |
+| Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | 2026-06-14 | Ernesto Crespo | Esquemas base y mapeo de las 43 gráficas |
+| 1.0 | 2026-06-14 | Ernesto Crespo | Base schemas and mapping of the 43 charts |

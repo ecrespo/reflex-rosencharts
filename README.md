@@ -1,18 +1,18 @@
 # reflex-rosencharts
 
-Port de la librería de gráficas [**rosencharts**](https://github.com/Filsommer/rosenCharts)
-(43 componentes React/TSX con D3.js + Tailwind) a un **custom component de
-[Reflex](https://reflex.dev/)**, para usar las gráficas desde Python puro.
+A port of the [**rosencharts**](https://github.com/Filsommer/rosenCharts) charting library
+(43 React/TSX components built with D3.js + Tailwind) to a **custom component for
+[Reflex](https://reflex.dev/)**, so the charts can be used from pure Python.
 
-> Estado: **scaffold + plan SDD**. La implementación de las gráficas se realiza por fases según
+> Status: **scaffold + SDD plan**. The charts are implemented in phases according to
 > [`specs/plans/implementation-plan.md`](specs/plans/implementation-plan.md).
 
-## ¿Por qué?
+## Why?
 
-rosencharts no es un paquete npm: son componentes `.tsx` para copiar y pegar, con datos
-hardcodeados y estilo Tailwind. Este proyecto los envuelve como **componentes locales de Reflex**
-(`rx.asset` + `library="$/public..."`), los parametriza para recibir datos desde `rx.State`, y los
-expone como funciones Python:
+rosencharts is not an npm package: it's a set of `.tsx` components to copy and paste, with
+hardcoded data and Tailwind styling. This project wraps them as **local Reflex components**
+(`rx.asset` + `library="$/public..."`), parametrizes them to receive data from `rx.State`, and
+exposes them as Python functions:
 
 ```python
 import reflex as rx
@@ -25,9 +25,9 @@ def index() -> rx.Component:
     return rxc.line_chart(data=State.sales)
 ```
 
-## Gráficas (43 en 8 familias)
+## Charts (43 across 8 families)
 
-| Familia | Nº | Ejemplos |
+| Family | # | Examples |
 |---|---|---|
 | Area | 4 | `area_chart`, `area_chart_gradient` |
 | Bar | 12 | `bar_chart_horizontal`, `bar_chart_benchmark` |
@@ -38,30 +38,30 @@ def index() -> rx.Component:
 | Radar | 2 | `radar_chart`, `radar_chart_rounded` |
 | Other | 2 | `bubble_chart`, `funnel_chart` |
 
-Catálogo completo y props: [`specs/api/component-api-v1.md`](specs/api/component-api-v1.md).
+Full catalog and props: [`specs/api/component-api-v1.md`](specs/api/component-api-v1.md).
 
-## Desarrollo
+## Development
 
-Gestionado con [uv](https://docs.astral.sh/uv/):
+Managed with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv sync                 # instalar dependencias
-uv run reflex run       # arrancar la demo app / galería
+uv sync                 # install dependencies
+uv run reflex run       # start the demo app / gallery
 ```
 
-## Especificaciones (SDD)
+## Specifications (SDD)
 
-El proyecto sigue **Spec-Driven Design**. Las specs son el artefacto primario:
+The project follows **Spec-Driven Design**. The specs are the primary artifact:
 
-- [PRD](specs/prd/reflex-rosencharts-prd.md) — el qué y el para quién
-- [API Spec](specs/api/component-api-v1.md) — API pública Python (funciones, props)
-- [Technical Design](specs/technical/architecture.md) — patrón de wrapping y arquitectura
-- [Data Model](specs/data-model/chart-data-schemas.md) — esquemas de datos por gráfica
-- [Implementation Plan](specs/plans/implementation-plan.md) — fases por familia
+- [PRD](specs/prd/reflex-rosencharts-prd.md) — the what and the who-for
+- [API Spec](specs/api/component-api-v1.md) — public Python API (functions, props)
+- [Technical Design](specs/technical/architecture.md) — wrapping pattern and architecture
+- [Data Model](specs/data-model/chart-data-schemas.md) — per-chart data schemas
+- [Implementation Plan](specs/plans/implementation-plan.md) — phases by family
 
-El código original (referencia, solo lectura) está en [`reference/rosencharts/`](reference/rosencharts/).
+The original code (reference, read-only) lives in [`reference/rosencharts/`](reference/rosencharts/).
 
-## Licencia y atribución
+## License and attribution
 
-MIT. Este proyecto es un port de [rosencharts](https://github.com/Filsommer/rosenCharts)
-de Filsommer (MIT). Ver [`LICENSE`](LICENSE) y [`NOTICE`](NOTICE).
+MIT. This project is a port of [rosencharts](https://github.com/Filsommer/rosenCharts)
+by Filsommer (MIT). See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).

@@ -1,9 +1,9 @@
 reflex-rosencharts
 ==================
 
-Este proyecto es un port a Reflex de "rosencharts":
+This project is a Reflex port of "rosencharts":
   https://github.com/Filsommer/rosenCharts
-  Copyright (c) Filsommer — Licencia MIT
+  Copyright (c) Filsommer — MIT License
 
-El código original (TSX) se conserva como referencia en reference/rosencharts/
-bajo su licencia MIT original. Las adaptaciones a Reflex se distribuyen bajo MIT.
+The original code (TSX) is kept for reference under reference/rosencharts/
+under its original MIT license. The Reflex adaptations are distributed under MIT.

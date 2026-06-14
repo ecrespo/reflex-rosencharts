@@ -1,26 +1,26 @@
-# reflex-rosencharts — API Specification (API pública Python)
+# reflex-rosencharts — API Specification (Public Python API)
 
 ## Metadata
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **Autor** | Ernesto Crespo |
-| **Estado** | `DRAFT` |
-| **Versión API** | v1.0 |
-| **Fecha** | 2026-06-14 |
-| **PRD Relacionado** | [../prd/reflex-rosencharts-prd.md](../prd/reflex-rosencharts-prd.md) |
-| **Paquete** | `reflex_rosencharts` (alias sugerido `rxc`) |
+| **Author** | Ernesto Crespo |
+| **Status** | `DRAFT` |
+| **API Version** | v1.0 |
+| **Date** | 2026-06-14 |
+| **Related PRD** | [../prd/reflex-rosencharts-prd.md](../prd/reflex-rosencharts-prd.md) |
+| **Package** | `reflex_rosencharts` (suggested alias `rxc`) |
 
 ---
 
-> **Nota de adaptación SDD:** Esta no es una API HTTP. El "contrato" de esta librería es su
-> **API pública de Python**: las funciones de componente, sus props, tipos y event handlers.
-> Las secciones de auth/rate-limit/webhooks de la plantilla original no aplican y se omiten.
+> **SDD adaptation note:** This is not an HTTP API. The "contract" of this library is its
+> **public Python API**: the component functions, their props, types, and event handlers.
+> The auth/rate-limit/webhooks sections from the original template do not apply and are omitted.
 
-## 1. Visión General
+## 1. Overview
 
-La librería expone una función por gráfica que retorna un `rx.Component`. El consumidor importa el
-paquete y compone las gráficas en sus páginas Reflex, alimentándolas con datos desde `rx.State`.
+The library exposes one function per chart that returns an `rx.Component`. The consumer imports the
+package and composes the charts in their Reflex pages, feeding them with data from `rx.State`.
 
 ```python
 import reflex as rx
@@ -33,60 +33,60 @@ def index() -> rx.Component:
     return rxc.line_chart(data=State.sales, height="18rem")
 ```
 
-## 2. Convenciones de la API
+## 2. API Conventions
 
-### 2.1 Nomenclatura
-- Una función pública por gráfica, en `snake_case`, derivada del nombre original:
+### 2.1 Naming
+- One public function per chart, in `snake_case`, derived from the original name:
   `1_LineChart.tsx` → `line_chart`, `5_DonutChartCenterText.tsx` → `donut_chart_center_text`.
-- Re-exportadas desde `reflex_rosencharts/__init__.py`.
-- Variantes "_DIV" (basadas en `<div>` en vez de SVG) conservan el nombre semántico sin el sufijo
-  `_DIV` (p. ej. `bar_chart_horizontal`), documentando internamente la técnica de render.
+- Re-exported from `reflex_rosencharts/__init__.py`.
+- "_DIV" variants (based on `<div>` instead of SVG) keep the semantic name without the
+  `_DIV` suffix (e.g. `bar_chart_horizontal`), documenting the render technique internally.
 
-### 2.2 Props comunes (todas las gráficas)
+### 2.2 Common props (all charts)
 
-| Prop | Tipo | Default | Descripción |
+| Prop | Type | Default | Description |
 |---|---|---|---|
-| `data` | `rx.Var[list[dict]]` | `[]` | Conjunto de datos de la serie. Esquema según el tipo (ver Data Model). |
-| `height` | `rx.Var[str]` | `"18rem"` (`h-72`) | Alto del contenedor (CSS). |
-| `width` | `rx.Var[str]` | `"100%"` | Ancho del contenedor. |
-| `class_name` | `rx.Var[str]` | `""` | Clases Tailwind extra para el contenedor raíz. |
+| `data` | `rx.Var[list[dict]]` | `[]` | Series dataset. Schema depends on the type (see Data Model). |
+| `height` | `rx.Var[str]` | `"18rem"` (`h-72`) | Container height (CSS). |
+| `width` | `rx.Var[str]` | `"100%"` | Container width. |
+| `class_name` | `rx.Var[str]` | `""` | Extra Tailwind classes for the root container. |
 
-### 2.3 Props de color / paleta (donde aplica)
+### 2.3 Color / palette props (where applicable)
 
-| Prop | Tipo | Default | Descripción |
+| Prop | Type | Default | Description |
 |---|---|---|---|
-| `color` | `rx.Var[str]` | clase original | Color principal (clase Tailwind o valor CSS). |
-| `colors` | `rx.Var[list[str]]` | paleta original | Paleta para series múltiples (pie, multiline, multibar, scatter multiclass). |
-| `gradient` | `rx.Var[bool]` | según variante | Activa relleno con gradiente (variantes gradient). |
+| `color` | `rx.Var[str]` | original class | Primary color (Tailwind class or CSS value). |
+| `colors` | `rx.Var[list[str]]` | original palette | Palette for multiple series (pie, multiline, multibar, scatter multiclass). |
+| `gradient` | `rx.Var[bool]` | depends on variant | Enables gradient fill (gradient variants). |
 
-### 2.4 Event Handlers (gráficas interactivas)
+### 2.4 Event Handlers (interactive charts)
 
-| Handler | Spec | Gráficas |
+| Handler | Spec | Charts |
 |---|---|---|
-| `on_point_hover` | `rx.EventHandler[rx.event.passthrough_event_spec(dict)]` | Las 29 con `ClientTooltip` |
-| `on_point_click` | `rx.EventHandler[rx.event.passthrough_event_spec(dict)]` | `scatter_chart_interactive`, charts con selección |
+| `on_point_hover` | `rx.EventHandler[rx.event.passthrough_event_spec(dict)]` | The 29 with `ClientTooltip` |
+| `on_point_click` | `rx.EventHandler[rx.event.passthrough_event_spec(dict)]` | `scatter_chart_interactive`, charts with selection |
 
-### 2.5 Tipado de datos
-- Los esquemas de cada gráfica se definen con `TypedDict` (interop directo con la estructura JS) o
-  `rx.PropsBase` cuando se requiere conversión automática a camelCase. Detalle en el Data Model.
-- Errores de tipo se detectan en tiempo de compilación de Reflex (no en runtime HTTP).
+### 2.5 Data typing
+- The schema of each chart is defined with `TypedDict` (direct interop with the JS structure) or
+  `rx.PropsBase` when automatic conversion to camelCase is required. Details in the Data Model.
+- Type errors are detected at Reflex compile time (not at HTTP runtime).
 
-## 3. Catálogo de componentes (43)
+## 3. Component catalog (43)
 
-Estado por defecto: `☐ Pendiente` (se actualiza al portar cada uno).
+Default status: `☐ Pending` (updated as each one is ported).
 
 ### 3.1 Area (`reflex_rosencharts.components.area`)
 
-| Función | Origen | Datos | Tooltip | Estado |
+| Function | Source | Data | Tooltip | Status |
 |---|---|---|---|---|
-| `area_chart` | area-charts/1_AreaChart.tsx | serie temporal | sí | ☐ |
-| `area_chart_full` | area-charts/2_AreaChartFull.tsx | serie temporal | sí | ☐ |
-| `area_chart_gradient` | area-charts/3_AreaChartGradient.tsx | serie temporal | sí | ☐ |
-| `area_chart_semi_filled` | area-charts/4_AreaChartSemiFilled.tsx | serie temporal | sí | ☐ |
+| `area_chart` | area-charts/1_AreaChart.tsx | time series | yes | ☐ |
+| `area_chart_full` | area-charts/2_AreaChartFull.tsx | time series | yes | ☐ |
+| `area_chart_gradient` | area-charts/3_AreaChartGradient.tsx | time series | yes | ☐ |
+| `area_chart_semi_filled` | area-charts/4_AreaChartSemiFilled.tsx | time series | yes | ☐ |
 
 ### 3.2 Bar (`reflex_rosencharts.components.bar`)
 
-| Función | Origen | Técnica | Estado |
+| Function | Source | Technique | Status |
 |---|---|---|---|
 | `bar_chart_horizontal` | bar-charts/1_BarChartHorizontal_DIV.tsx | DIV | ☐ |
 | `bar_chart_horizontal_logo` | bar-charts/2_BarChartHorizontalLogo_DIV.tsx | DIV | ☐ |
@@ -103,7 +103,7 @@ Estado por defecto: `☐ Pendiente` (se actualiza al portar cada uno).
 
 ### 3.3 Line (`reflex_rosencharts.components.line`)
 
-| Función | Origen | Estado |
+| Function | Source | Status |
 |---|---|---|
 | `line_chart` | line-charts/1_LineChart.tsx | ☐ |
 | `line_chart_curved` | line-charts/2_LineChartCurved.tsx | ☐ |
@@ -116,7 +116,7 @@ Estado por defecto: `☐ Pendiente` (se actualiza al portar cada uno).
 
 ### 3.4 Pie / Donut (`reflex_rosencharts.components.pie`)
 
-| Función | Origen | Estado |
+| Function | Source | Status |
 |---|---|---|
 | `pie_chart` | pie-charts/1_PieChart.tsx | ☐ |
 | `pie_chart_stocks` | pie-charts/2_PieChartStocks.tsx | ☐ |
@@ -129,16 +129,16 @@ Estado por defecto: `☐ Pendiente` (se actualiza al portar cada uno).
 
 ### 3.5 Scatter (`reflex_rosencharts.components.scatter`)
 
-| Función | Origen | Interactiva | Estado |
+| Function | Source | Interactive | Status |
 |---|---|---|---|
 | `scatter_chart` | scatter-charts/1_ScatterChart.tsx | no | ☐ |
-| `scatter_chart_interactive` | scatter-charts/2_ScatterChartInteractive.tsx | sí | ☐ |
+| `scatter_chart_interactive` | scatter-charts/2_ScatterChartInteractive.tsx | yes | ☐ |
 | `scatter_chart_multiclass` | scatter-charts/5_ScatterChartMulticlass.tsx | no | ☐ |
 | `scatter_chart_stocks` | scatter-charts/6_ScatterChartStocks.tsx | no | ☐ |
 
 ### 3.6 Treemap (`reflex_rosencharts.components.treemap`)
 
-| Función | Origen | Estado |
+| Function | Source | Status |
 |---|---|---|
 | `treemap_chart` | treemap-charts/1_TreemapChart_DIV.tsx | ☐ |
 | `treemap_chart_images` | treemap-charts/2_TreemapChartImages_DIV.tsx | ☐ |
@@ -146,41 +146,41 @@ Estado por defecto: `☐ Pendiente` (se actualiza al portar cada uno).
 
 ### 3.7 Radar (`reflex_rosencharts.components.radar`)
 
-| Función | Origen | Estado |
+| Function | Source | Status |
 |---|---|---|
 | `radar_chart` | radar-charts/6_RadarChart.tsx | ☐ |
 | `radar_chart_rounded` | radar-charts/8_RadarChartRounded.tsx | ☐ |
 
 ### 3.8 Other (`reflex_rosencharts.components.other`)
 
-| Función | Origen | Estado |
+| Function | Source | Status |
 |---|---|---|
 | `bubble_chart` | other-charts/4_BubbleChart_DIV.tsx | ☐ |
 | `funnel_chart` | other-charts/5_FunnelChart.tsx | ☐ |
 
-## 4. Especificación detallada (ejemplos representativos)
+## 4. Detailed specification (representative examples)
 
 ### 4.1 `line_chart(data, *, height, width, color, class_name, on_point_hover)`
 
-**Descripción:** Gráfica de línea sobre serie temporal con tooltip por punto.
+**Description:** Line chart over a time series with a per-point tooltip.
 
 **Props:**
 
-| Prop | Tipo | Requerido | Regla | Default |
+| Prop | Type | Required | Rule | Default |
 |---|---|---|---|---|
-| `data` | `list[LinePoint]` | Sí | lista no vacía de `{date, value}` | `[]` |
-| `color` | `str` | No | clase Tailwind (`stroke-*`) o color | `"stroke-fuchsia-400"` |
-| `height` | `str` | No | CSS válido | `"18rem"` |
-| `on_point_hover` | EventHandler | No | recibe `{date, value}` | — |
+| `data` | `list[LinePoint]` | Yes | non-empty list of `{date, value}` | `[]` |
+| `color` | `str` | No | Tailwind class (`stroke-*`) or color | `"stroke-fuchsia-400"` |
+| `height` | `str` | No | valid CSS | `"18rem"` |
+| `on_point_hover` | EventHandler | No | receives `{date, value}` | — |
 
-**Tipo de dato (`LinePoint`):**
+**Data type (`LinePoint`):**
 ```python
 class LinePoint(TypedDict):
     date: str    # ISO date 'YYYY-MM-DD'
     value: float
 ```
 
-**Ejemplo de uso:**
+**Usage example:**
 ```python
 rxc.line_chart(
     data=State.sales,            # [{"date": "2023-05-01", "value": 6}, ...]
@@ -192,14 +192,14 @@ rxc.line_chart(
 
 ### 4.2 `donut_chart(data, *, height, colors, class_name)`
 
-**Tipo de dato (`CategoryValue`):**
+**Data type (`CategoryValue`):**
 ```python
 class CategoryValue(TypedDict):
     name: str
     value: float
 ```
 
-**Ejemplo:**
+**Example:**
 ```python
 rxc.donut_chart(
     data=[{"name": "AAPL", "value": 38}, {"name": "MSFT", "value": 22}],
@@ -209,33 +209,33 @@ rxc.donut_chart(
 
 ### 4.3 `scatter_chart_interactive(data, *, on_point_click, ...)`
 
-**Tipo de dato (`ScatterPoint`):**
+**Data type (`ScatterPoint`):**
 ```python
 class ScatterPoint(TypedDict):
     x: float
     y: float
-    label: str  # opcional según gráfica
+    label: str  # optional depending on the chart
 ```
 
-**Event handler:** `on_point_click` recibe el punto `{x, y, label}` al hacer clic.
+**Event handler:** `on_point_click` receives the point `{x, y, label}` on click.
 
-## 5. Errores y validación
+## 5. Errors and validation
 
-| Situación | Comportamiento esperado |
+| Situation | Expected behavior |
 |---|---|
-| `data` vacío | Render de estado vacío (sin error); la gráfica no dibuja series. |
-| Esquema de dato incorrecto | Error de tipado en compilación de Reflex / log en consola. |
-| Prop de color inválido | Se aplica tal cual a la clase/estilo; degradación visual, sin crash. |
+| empty `data` | Empty-state render (no error); the chart does not draw series. |
+| Incorrect data schema | Type error at Reflex compile time / console log. |
+| Invalid color prop | Applied as-is to the class/style; visual degradation, no crash. |
 
-## 6. Versionado
+## 6. Versioning
 
-- Versionado semántico del paquete (`MAJOR.MINOR.PATCH`).
-- v1.x: API estable de las funciones listadas. Cambios incompatibles → v2.
+- Semantic versioning of the package (`MAJOR.MINOR.PATCH`).
+- v1.x: stable API for the listed functions. Breaking changes → v2.
 
 ---
 
-## Historial de Cambios
+## Change History
 
-| Versión | Fecha | Cambios |
+| Version | Date | Changes |
 |---|---|---|
-| 1.0 | 2026-06-14 | Catálogo inicial de las 43 funciones y props comunes |
+| 1.0 | 2026-06-14 | Initial catalog of the 43 functions and common props |

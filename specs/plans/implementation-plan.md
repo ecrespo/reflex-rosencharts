@@ -2,12 +2,12 @@
 
 ## Metadata
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **Autor** | Ernesto Crespo |
-| **Estado** | `DRAFT` |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-06-14 |
+| **Author** | Ernesto Crespo |
+| **Status** | `DRAFT` |
+| **Version** | 1.0 |
+| **Date** | 2026-06-14 |
 | **PRD** | [../prd/reflex-rosencharts-prd.md](../prd/reflex-rosencharts-prd.md) |
 | **Tech Design** | [../technical/architecture.md](../technical/architecture.md) |
 | **Data Model** | [../data-model/chart-data-schemas.md](../data-model/chart-data-schemas.md) |
@@ -15,233 +15,233 @@
 
 ---
 
-## 1. Resumen de Implementación
+## 1. Implementation Summary
 
-Se portan las **43 gráficas** de rosencharts a Reflex en **8 fases** tras una fase de fundación.
-Estrategia: primero resolver la infraestructura de wrapping (Tailwind + helper de tooltip + receta
-repetible) sobre **una** gráfica de referencia; luego portar **por familias**, de la más simple
-(menos campos, sin tooltip) a la más compleja (anidada/interactiva). Cada gráfica incluye su wrapper
-Python, su TSX parametrizado, su página de ejemplo en la galería y sus tests.
+The **43 charts** from rosencharts are ported to Reflex across **8 phases** following a foundation phase.
+Strategy: first resolve the wrapping infrastructure (Tailwind + tooltip helper + repeatable recipe)
+on **one** reference chart; then port **by family**, from the simplest (fewest fields, no tooltip)
+to the most complex (nested/interactive). Each chart includes its Python wrapper, its parameterized
+TSX, its example page in the gallery, and its tests.
 
-**Duración total estimada:** 6-7 semanas (1 persona) · **Equipo:** 1 dev full-stack (Python+React).
-**Gate de release:** 43/43 gráficas portadas, con ejemplo y compilando, antes de publicar a PyPI.
+**Total estimated duration:** 6-7 weeks (1 person) · **Team:** 1 full-stack dev (Python+React).
+**Release gate:** 43/43 charts ported, with example and compiling, before publishing to PyPI.
 
-## 2. Pre-requisitos
+## 2. Prerequisites
 
-| Pre-requisito | Owner | Estado | Notas |
+| Prerequisite | Owner | Status | Notes |
 |---|---|---|---|
-| Specs SDD aprobados | Ernesto | ☐ | Este conjunto de documentos |
-| Proyecto Reflex + uv inicializado | Ernesto | ✅ | Hecho en esta sesión |
-| Repo GitHub creado | Ernesto | ☐ | Requiere `gh auth login` |
-| Node/Bun disponible para `reflex run` | Ernesto | ☐ | Reflex gestiona Bun; verificar en entorno de dev |
-| Decisión NoSSR por gráfica | Ernesto | ☐ | Confirmar en spike (F0) |
+| SDD specs approved | Ernesto | ☐ | This set of documents |
+| Reflex + uv project initialized | Ernesto | ✅ | Done in this session |
+| GitHub repo created | Ernesto | ☐ | Requires `gh auth login` |
+| Node/Bun available for `reflex run` | Ernesto | ☐ | Reflex manages Bun; verify in dev environment |
+| Per-chart NoSSR decision | Ernesto | ☐ | Confirm in spike (F0) |
 
-## 3. Fases de Implementación
+## 3. Implementation Phases
 
 ---
 
-### Fase 0: Fundación e Infraestructura de Wrapping
+### Phase 0: Foundation and Wrapping Infrastructure
 
-**Duración:** ~1 semana · **Objetivo:** Resolver Tailwind + tooltip + receta sobre 1 gráfica.
+**Duration:** ~1 week · **Goal:** Resolve Tailwind + tooltip + recipe on 1 chart.
 
-| ID | Tarea | Estimación | Dependencia | Estado |
+| ID | Task | Estimate | Dependency | Status |
 |---|---|---|---|---|
-| F0-01 | Estructura de paquete (`components/<familia>/`) y `__init__` | 0.5d | — | ✅ (scaffold) |
-| F0-02 | Habilitar y validar **Tailwind** en `rxconfig.py` (spike) | 1d | F0-01 | ☐ |
-| F0-03 | Portar helper **`ClientTooltip`** y validarlo en aislamiento | 1d | F0-02 | ☐ |
-| F0-04 | Portar **`line_chart`** (gráfica piloto) end-to-end con la receta | 1.5d | F0-03 | ☐ |
-| F0-05 | Parametrizar datos del piloto (prop `data` + default = ejemplo) | 0.5d | F0-04 | ☐ |
-| F0-06 | Página de galería base + 1 ejemplo (piloto) | 0.5d | F0-04 | ☐ |
-| F0-07 | Tests base (import + render) y workflow de comparación visual | 1d | F0-04 | ☐ |
-| F0-08 | Documentar la **receta de port** definitiva en CONTRIBUTING | 0.5d | F0-04 | ☐ |
+| F0-01 | Package structure (`components/<family>/`) and `__init__` | 0.5d | — | ✅ (scaffold) |
+| F0-02 | Enable and validate **Tailwind** in `rxconfig.py` (spike) | 1d | F0-01 | ☐ |
+| F0-03 | Port the **`ClientTooltip`** helper and validate it in isolation | 1d | F0-02 | ☐ |
+| F0-04 | Port **`line_chart`** (pilot chart) end-to-end with the recipe | 1.5d | F0-03 | ☐ |
+| F0-05 | Parameterize pilot data (`data` prop + default = example) | 0.5d | F0-04 | ☐ |
+| F0-06 | Base gallery page + 1 example (pilot) | 0.5d | F0-04 | ☐ |
+| F0-07 | Base tests (import + render) and visual comparison workflow | 1d | F0-04 | ☐ |
+| F0-08 | Document the definitive **port recipe** in CONTRIBUTING | 0.5d | F0-04 | ☐ |
 
-**Done:** `rxc.line_chart()` renderiza idéntico al original; Tailwind y tooltip funcionan; receta escrita.
+**Done:** `rxc.line_chart()` renders identically to the original; Tailwind and tooltip work; recipe written.
 
 ---
 
-### Fase 1: Familia Line (8 gráficas)
+### Phase 1: Line Family (8 charts)
 
-**Duración:** ~3-4 días · **Dep:** F0. Reutiliza la receta del piloto.
+**Duration:** ~3-4 days · **Dep:** F0. Reuses the pilot recipe.
 
-| ID | Gráfica | Notas | Estado |
+| ID | Chart | Notes | Status |
 |---|---|---|---|
-| F1-01 | `line_chart` | piloto (de F0) | ☐ |
-| F1-02 | `line_chart_curved` | curva D3 | ☐ |
+| F1-01 | `line_chart` | pilot (from F0) | ☐ |
+| F1-02 | `line_chart_curved` | D3 curve | ☐ |
 | F1-03 | `line_chart_step` | step | ☐ |
-| F1-04 | `line_chart_pulse` | animación de pulso | ☐ |
+| F1-04 | `line_chart_pulse` | pulse animation | ☐ |
 | F1-05 | `line_chart_labels_curved` | labels | ☐ |
-| F1-06 | `line_chart_full` | ejes completos | ☐ |
-| F1-07 | `line_chart_stocks_curved` | formato bolsa | ☐ |
-| F1-08 | `line_chart_multiple` | **multi-serie** (`data`, `data2`) | ☐ |
+| F1-06 | `line_chart_full` | full axes | ☐ |
+| F1-07 | `line_chart_stocks_curved` | stock format | ☐ |
+| F1-08 | `line_chart_multiple` | **multi-series** (`data`, `data2`) | ☐ |
 
-**Done:** 8 funciones `line_*` + ejemplos + tests; comparación visual OK.
+**Done:** 8 `line_*` functions + examples + tests; visual comparison OK.
 
 ---
 
-### Fase 2: Familia Area (4 gráficas)
+### Phase 2: Area Family (4 charts)
 
-**Duración:** ~2 días · **Dep:** F1 (mismo esquema `TimePoint`).
+**Duration:** ~2 days · **Dep:** F1 (same `TimePoint` schema).
 
-| ID | Gráfica | Notas | Estado |
+| ID | Chart | Notes | Status |
 |---|---|---|---|
 | F2-01 | `area_chart` | base | ☐ |
-| F2-02 | `area_chart_full` | ejes | ☐ |
-| F2-03 | `area_chart_gradient` | gradiente SVG | ☐ |
-| F2-04 | `area_chart_semi_filled` | relleno parcial | ☐ |
+| F2-02 | `area_chart_full` | axes | ☐ |
+| F2-03 | `area_chart_gradient` | SVG gradient | ☐ |
+| F2-04 | `area_chart_semi_filled` | partial fill | ☐ |
 
-**Done:** 4 funciones `area_*` + ejemplos + tests.
+**Done:** 4 `area_*` functions + examples + tests.
 
 ---
 
-### Fase 3: Familia Bar (12 gráficas)
+### Phase 3: Bar Family (12 charts)
 
-**Duración:** ~1 semana · **Dep:** F0. Mezcla DIV y SVG; varias variantes con campos extra.
+**Duration:** ~1 week · **Dep:** F0. Mixes DIV and SVG; several variants with extra fields.
 
-| ID | Gráfica | Técnica/Notas | Estado |
+| ID | Chart | Technique/Notes | Status |
 |---|---|---|---|
 | F3-01 | `bar_chart_horizontal` | DIV | ☐ |
 | F3-02 | `bar_chart_vertical` | DIV | ☐ |
 | F3-03 | `bar_chart_thin_horizontal` | DIV | ☐ |
-| F3-04 | `bar_chart_gradient` | DIV + gradiente | ☐ |
-| F3-05 | `bar_chart_multi_vertical` | DIV multi-serie | ☐ |
-| F3-06 | `bar_chart_horizontal_logo` | DIV + `logo` (imagen) | ☐ |
+| F3-04 | `bar_chart_gradient` | DIV + gradient | ☐ |
+| F3-05 | `bar_chart_multi_vertical` | DIV multi-series | ☐ |
+| F3-06 | `bar_chart_horizontal_logo` | DIV + `logo` (image) | ☐ |
 | F3-07 | `bar_chart_flags_horizontal` | SVG + `flag` | ☐ |
 | F3-08 | `bar_chart_triple_flags_horizontal` | DIV + flags x3 | ☐ |
-| F3-09 | `bar_chart_breakdown` | SVG apilado | ☐ |
-| F3-10 | `bar_chart_thin_breakdown` | SVG apilado fino | ☐ |
-| F3-11 | `bar_chart_line` | SVG barra + línea | ☐ |
+| F3-09 | `bar_chart_breakdown` | stacked SVG | ☐ |
+| F3-10 | `bar_chart_thin_breakdown` | thin stacked SVG | ☐ |
+| F3-11 | `bar_chart_line` | SVG bar + line | ☐ |
 | F3-12 | `bar_chart_benchmark` | SVG + `benchmark` | ☐ |
 
-**Done:** 12 funciones `bar_*`; `TypedDict` de variantes documentados; ejemplos + tests.
+**Done:** 12 `bar_*` functions; documented variant `TypedDict`s; examples + tests.
 
 ---
 
-### Fase 4: Familia Pie/Donut (8 gráficas)
+### Phase 4: Pie/Donut Family (8 charts)
 
-**Duración:** ~3-4 días · **Dep:** F0. Paleta `colors`.
+**Duration:** ~3-4 days · **Dep:** F0. `colors` palette.
 
-| ID | Gráfica | Notas | Estado |
+| ID | Chart | Notes | Status |
 |---|---|---|---|
 | F4-01 | `pie_chart` | base | ☐ |
 | F4-02 | `pie_chart_labels` | labels | ☐ |
-| F4-03 | `pie_chart_stocks` | tema bolsa | ☐ |
-| F4-04 | `donut_chart` | hueco central | ☐ |
-| F4-05 | `donut_chart_center_text` | prop `center_text` | ☐ |
-| F4-06 | `donut_chart_half` | semicírculo | ☐ |
+| F4-03 | `pie_chart_stocks` | stock theme | ☐ |
+| F4-04 | `donut_chart` | center hole | ☐ |
+| F4-05 | `donut_chart_center_text` | `center_text` prop | ☐ |
+| F4-06 | `donut_chart_half` | semicircle | ☐ |
 | F4-07 | `donut_chart_fillable` | `value` 0–100 | ☐ |
 | F4-08 | `donut_chart_fillable_half` | gauge | ☐ |
 
-**Done:** 8 funciones `pie_*`/`donut_*` + ejemplos + tests.
+**Done:** 8 `pie_*`/`donut_*` functions + examples + tests.
 
 ---
 
-### Fase 5: Familia Scatter (4 gráficas)
+### Phase 5: Scatter Family (4 charts)
 
-**Duración:** ~3 días · **Dep:** F0. Incluye **interactividad** (event handler).
+**Duration:** ~3 days · **Dep:** F0. Includes **interactivity** (event handler).
 
-| ID | Gráfica | Notas | Estado |
+| ID | Chart | Notes | Status |
 |---|---|---|---|
 | F5-01 | `scatter_chart` | base | ☐ |
-| F5-02 | `scatter_chart_stocks` | tema bolsa | ☐ |
-| F5-03 | `scatter_chart_multiclass` | color por clase | ☐ |
+| F5-02 | `scatter_chart_stocks` | stock theme | ☐ |
+| F5-03 | `scatter_chart_multiclass` | color per class | ☐ |
 | F5-04 | `scatter_chart_interactive` | `on_point_click` (EventHandler) | ☐ |
 
-**Done:** 4 funciones `scatter_*`; event handler validado contra `rx.State`.
+**Done:** 4 `scatter_*` functions; event handler validated against `rx.State`.
 
 ---
 
-### Fase 6: Familias Treemap + Radar (5 gráficas)
+### Phase 6: Treemap + Radar Families (5 charts)
 
-**Duración:** ~3-4 días · **Dep:** F0. Treemap usa estructura **anidada**.
+**Duration:** ~3-4 days · **Dep:** F0. Treemap uses a **nested** structure.
 
-| ID | Gráfica | Notas | Estado |
+| ID | Chart | Notes | Status |
 |---|---|---|---|
-| F6-01 | `treemap_chart` | DIV anidado | ☐ |
-| F6-02 | `treemap_chart_gradient` | DIV + gradiente | ☐ |
-| F6-03 | `treemap_chart_images` | nodos con `img` | ☐ |
-| F6-04 | `radar_chart` | polígono | ☐ |
-| F6-05 | `radar_chart_rounded` | aristas redondeadas | ☐ |
+| F6-01 | `treemap_chart` | nested DIV | ☐ |
+| F6-02 | `treemap_chart_gradient` | DIV + gradient | ☐ |
+| F6-03 | `treemap_chart_images` | nodes with `img` | ☐ |
+| F6-04 | `radar_chart` | polygon | ☐ |
+| F6-05 | `radar_chart_rounded` | rounded edges | ☐ |
 
-**Done:** 5 funciones + ejemplos + tests; esquema anidado de treemap validado.
+**Done:** 5 functions + examples + tests; treemap nested schema validated.
 
 ---
 
-### Fase 7: Familia Other (2 gráficas) + Galería completa
+### Phase 7: Other Family (2 charts) + Complete Gallery
 
-**Duración:** ~3 días · **Dep:** F1-F6.
+**Duration:** ~3 days · **Dep:** F1-F6.
 
-| ID | Tarea | Notas | Estado |
+| ID | Task | Notes | Status |
 |---|---|---|---|
-| F7-01 | `bubble_chart` | scatter con radio | ☐ |
-| F7-02 | `funnel_chart` | etapas | ☐ |
-| F7-03 | Galería: navegación por familias + snippet por gráfica | 43 ejemplos | ☐ |
-| F7-04 | Auditoría de paridad visual (43/43) por captura | gate de calidad | ☐ |
-| F7-05 | Cobertura de tests Python > 70% | — | ☐ |
+| F7-01 | `bubble_chart` | scatter with radius | ☐ |
+| F7-02 | `funnel_chart` | stages | ☐ |
+| F7-03 | Gallery: navigation by family + snippet per chart | 43 examples | ☐ |
+| F7-04 | Visual parity audit (43/43) by capture | quality gate | ☐ |
+| F7-05 | Python test coverage > 70% | — | ☐ |
 
-**Done:** 43/43 con ejemplo en galería; auditoría visual firmada.
+**Done:** 43/43 with example in the gallery; visual audit signed off.
 
 ---
 
-### Fase 8: Empaquetado, Documentación y Publicación
+### Phase 8: Packaging, Documentation, and Publication
 
-**Duración:** ~2-3 días · **Dep:** F7.
+**Duration:** ~2-3 days · **Dep:** F7.
 
-| ID | Tarea | Notas | Estado |
+| ID | Task | Notes | Status |
 |---|---|---|---|
-| F8-01 | `pyproject.toml` de distribución (metadatos, clasificadores, incluir assets `.tsx`) | — | ☐ |
-| F8-02 | README con instalación, quickstart y galería de snippets | — | ☐ |
-| F8-03 | LICENSE MIT + atribución a rosencharts (Filsommer) | obligatorio | ☐ |
+| F8-01 | Distribution `pyproject.toml` (metadata, classifiers, include `.tsx` assets) | — | ☐ |
+| F8-02 | README with installation, quickstart, and snippet gallery | — | ☐ |
+| F8-03 | MIT LICENSE + attribution to rosencharts (Filsommer) | mandatory | ☐ |
 | F8-04 | CI (GitHub Actions): lint + tests + build | — | ☐ |
-| F8-05 | Build del custom component (`reflex component build` / Hatch) | — | ☐ |
-| F8-06 | Publicar `0.1.0` en PyPI (TestPyPI primero) | gate final | ☐ |
+| F8-05 | Custom component build (`reflex component build` / Hatch) | — | ☐ |
+| F8-06 | Publish `0.1.0` to PyPI (TestPyPI first) | final gate | ☐ |
 
-**Done:** `pip install reflex-rosencharts` funciona; CI verde; release etiquetado.
+**Done:** `pip install reflex-rosencharts` works; CI green; release tagged.
 
-## 4. Mapa de Dependencias
+## 4. Dependency Map
 
 ```
-Fase 0: Fundación (Tailwind + ClientTooltip + receta sobre line_chart)
+Phase 0: Foundation (Tailwind + ClientTooltip + recipe on line_chart)
    │
-   ├──▶ Fase 1: Line ──▶ Fase 2: Area   (comparten TimePoint)
-   ├──▶ Fase 3: Bar
-   ├──▶ Fase 4: Pie/Donut
-   ├──▶ Fase 5: Scatter (interactividad)
-   └──▶ Fase 6: Treemap + Radar
+   ├──▶ Phase 1: Line ──▶ Phase 2: Area   (share TimePoint)
+   ├──▶ Phase 3: Bar
+   ├──▶ Phase 4: Pie/Donut
+   ├──▶ Phase 5: Scatter (interactivity)
+   └──▶ Phase 6: Treemap + Radar
                  │
                  ▼
-        Fase 7: Other + Galería completa ──▶ Fase 8: Empaquetado y Publicación
+        Phase 7: Other + Complete Gallery ──▶ Phase 8: Packaging and Publication
 ```
 
-Las fases 1-6 pueden paralelizarse si hay más de un desarrollador (todas dependen sólo de F0).
+Phases 1-6 can be parallelized if there is more than one developer (all depend only on F0).
 
-## 5. Riesgos de Implementación
+## 5. Implementation Risks
 
-| Riesgo | Prob. | Impacto | Mitigación | Owner |
+| Risk | Prob. | Impact | Mitigation | Owner |
 |---|---|---|---|---|
-| Tailwind no genera clases dinámicas | Media | Alto | Spike F0-02; safelist de clases necesarias | Ernesto |
-| Errores de hidratación por portales (tooltip) | Media | Medio | `NoSSRComponent`/dynamic import en gráficas con tooltip | Ernesto |
-| Variantes con campos extra rompen el esquema base | Media | Medio | `TypedDict` propio por variante (Data Model §4) | Ernesto |
-| Paridad visual difícil en gráficas complejas | Media | Medio | Comparación por captura contra `reference/` | Ernesto |
-| Empaquetar assets `.tsx` en el wheel | Baja | Alto | Configurar `include` de assets en build; probar en TestPyPI | Ernesto |
+| Tailwind does not generate dynamic classes | Medium | High | Spike F0-02; safelist of required classes | Ernesto |
+| Hydration errors from portals (tooltip) | Medium | Medium | `NoSSRComponent`/dynamic import in charts with tooltip | Ernesto |
+| Variants with extra fields break the base schema | Medium | Medium | Dedicated `TypedDict` per variant (Data Model §4) | Ernesto |
+| Visual parity hard on complex charts | Medium | Medium | Capture comparison against `reference/` | Ernesto |
+| Packaging `.tsx` assets in the wheel | Low | High | Configure asset `include` in build; test on TestPyPI | Ernesto |
 
-## 6. Seguimiento
+## 6. Tracking
 
-- Tablero por fase con el estado `☐/✅` de cada gráfica (este documento es la fuente de verdad).
-- Cada familia mergea cuando: compila + ejemplo en galería + tests verdes + revisión visual.
+- Per-phase board with the `☐/✅` status of each chart (this document is the source of truth).
+- Each family merges when: compiles + example in gallery + tests green + visual review.
 
-## 7. Definición de Done (Global, por gráfica)
+## 7. Definition of Done (Global, per chart)
 
-- [ ] Wrapper Python implementado y re-exportado
-- [ ] TSX parametrizado (datos por prop; default = ejemplo original)
-- [ ] Página de ejemplo en la galería
-- [ ] Tests (import + render) en verde; compila en build de Reflex
-- [ ] Paridad visual revisada contra `reference/rosencharts/`
-- [ ] Docstring con esquema de datos y snippet de uso
+- [ ] Python wrapper implemented and re-exported
+- [ ] Parameterized TSX (data via prop; default = original example)
+- [ ] Example page in the gallery
+- [ ] Tests (import + render) green; compiles in Reflex build
+- [ ] Visual parity reviewed against `reference/rosencharts/`
+- [ ] Docstring with data schema and usage snippet
 
 ---
 
-## Historial de Cambios
+## Change History
 
-| Versión | Fecha | Autor | Cambios |
+| Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | 2026-06-14 | Ernesto Crespo | Plan por familias para las 43 gráficas |
+| 1.0 | 2026-06-14 | Ernesto Crespo | Family-based plan for the 43 charts |
