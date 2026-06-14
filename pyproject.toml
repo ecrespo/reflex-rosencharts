@@ -10,6 +10,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "playwright>=1.60.0",
     "pytest>=9.1.0",
     "pytest-cov>=7.1.0",
 ]

@@ -4,8 +4,9 @@ Port de la librería de gráficas [**rosencharts**](https://github.com/Filsommer
 (43 componentes React/TSX con D3.js + Tailwind) a un **custom component de
 [Reflex](https://reflex.dev/)**, para usar las gráficas desde Python puro.
 
-> Estado: **scaffold + plan SDD**. La implementación de las gráficas se realiza por fases según
-> [`specs/plans/implementation-plan.md`](specs/plans/implementation-plan.md).
+> Estado: **43/43 gráficas implementadas** ✅ — todas con wrapper Python, TSX parametrizado,
+> ejemplo en la galería y tests. La app demo (`reflex run`) muestra las 43 con su snippet de uso.
+> Capturas en [`docs/screenshots/`](docs/screenshots/).
 
 ## ¿Por qué?
 
@@ -46,8 +47,13 @@ Gestionado con [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync                 # instalar dependencias
-uv run reflex run       # arrancar la demo app / galería
+uv run reflex run       # arrancar la demo app / galería (las 43 gráficas)
+uv run pytest           # tests de los wrappers (TDD)
 ```
+
+La **galería demo** vive en `reflex_rosencharts/reflex_rosencharts.py`: barra lateral por familia
+y una tarjeta por gráfica (gráfica renderizada con datos de ejemplo + snippet Python). Es el banco
+de pruebas visual del port.
 
 ## Especificaciones (SDD)
 
