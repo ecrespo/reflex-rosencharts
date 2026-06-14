@@ -10,5 +10,7 @@ se irán re-exportando aquí a medida que se porten (fases F1-F7 del plan).
 
 __version__ = "0.0.1"
 
-# Ejemplo de re-export (se activará al portar cada gráfica):
-# from .components.line.line_chart import line_chart  # noqa: F401
+# Public API — re-exported per chart as families are ported.
+from .components.line import line_chart  # noqa: E402
+
+__all__ = ["line_chart"]

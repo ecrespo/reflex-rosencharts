@@ -1,1 +1,5 @@
-"""Componentes rosencharts: familia line (pendiente de implementar, ver specs/plans)."""
+"""Componentes rosencharts: familia line."""
+
+from .line_chart import line_chart
+
+__all__ = ["line_chart"]
