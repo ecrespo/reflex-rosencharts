@@ -17,3 +17,8 @@ wheels/
 # coverage
 .coverage
 htmlcov/
+
+# build artifacts
+dist/
+build/
+*.egg-info/

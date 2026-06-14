@@ -8,7 +8,7 @@ Por ahora el paquete expone el scaffold y la demo app. Las funciones de gráfica
 se irán re-exportando aquí a medida que se porten (fases F1-F7 del plan).
 """
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 # Public API — aggregated dynamically from each family package so that charts can be
 # ported in parallel without ever editing this shared file. Each family's __init__
