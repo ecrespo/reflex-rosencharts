@@ -1,99 +1,99 @@
-# reflex-rosencharts — Diseño de ejecución (port de las 43 gráficas)
+# reflex-rosencharts — Execution design (port of the 43 charts)
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **Autor** | Ernesto Crespo (con Claude) |
-| **Fecha** | 2026-06-14 |
-| **Estado** | Aprobado (brainstorming) |
-| **Specs base** | [PRD](../../specs/prd/reflex-rosencharts-prd.md) · [Tech Design](../../specs/technical/architecture.md) · [API](../../specs/api/component-api-v1.md) · [Data Model](../../specs/data-model/chart-data-schemas.md) · [Plan](../../specs/plans/implementation-plan.md) |
+| **Author** | Ernesto Crespo (with Claude) |
+| **Date** | 2026-06-14 |
+| **Status** | Approved (brainstorming) |
+| **Base specs** | [PRD](../../specs/prd/reflex-rosencharts-prd.md) · [Tech Design](../../specs/technical/architecture.md) · [API](../../specs/api/component-api-v1.md) · [Data Model](../../specs/data-model/chart-data-schemas.md) · [Plan](../../specs/plans/implementation-plan.md) |
 
-> La **arquitectura** (wrapping con `rx.asset` + `library="$/public..."`, parametrización de datos,
-> Tailwind, tooltip/SSR) ya está fijada en los specs SDD. Este documento define el **cómo se ejecuta**
-> el port de las 43 gráficas en una sesión, con TDD y verificación.
+> The **architecture** (wrapping with `rx.asset` + `library="$/public..."`, data parameterization,
+> Tailwind, tooltip/SSR) is already fixed in the SDD specs. This document defines **how the port
+> of the 43 charts is executed** in one session, with TDD and verification.
 
-## 1. Decisiones de la sesión (aprobadas)
+## 1. Session decisions (approved)
 
-| Decisión | Valor |
+| Decision | Value |
 |---|---|
-| **Alcance** | Las **43 gráficas** completas + galería demo |
-| **Metodología** | **TDD** en todo el layer Python (red → green → refactor por gráfica) |
-| **Ejecución** | Receta probada en el piloto por el dev principal → **workflow multi-agente** por familias para las 42 restantes |
-| **Verificación** | Tests pytest verdes + `reflex run` compila la galería + **capturas Playwright** vs `reference/` |
+| **Scope** | The full **43 charts** + demo gallery |
+| **Methodology** | **TDD** across the entire Python layer (red → green → refactor per chart) |
+| **Execution** | Recipe proven in the pilot by the lead dev → **multi-agent workflow** by families for the remaining 42 |
+| **Verification** | Green pytest tests + `reflex run` compiles the gallery + **Playwright screenshots** vs `reference/` |
 
-## 2. Principio rector
+## 2. Guiding principle
 
-No se abanican agentes sobre una receta no comprobada. Primero se prueba el camino completo
-(Tailwind + D3 + ClientTooltip + wrapping + demo) sobre **1 gráfica piloto** y se verifica que
-**compila y renderiza**; recién entonces se paraleliza el resto.
+Agents are not fanned out over an unproven recipe. First the full path is proven
+(Tailwind + D3 + ClientTooltip + wrapping + demo) on **1 pilot chart** and it is verified that it
+**compiles and renders**; only then is the rest parallelized.
 
-## 3. Etapas
+## 3. Stages
 
-### Etapa A — Fundación + piloto (secuencial, verificado, TDD)
+### Stage A — Foundation + pilot (sequential, verified, TDD)
 
-1. Portar `ClientTooltip.tsx` al paquete como helper compartido; wrapper NoSSR (usa `createPortal`).
-2. Resolver Tailwind V4: asegurar que las clases de los TSX se escaneen/generen. Definir **safelist**
-   para clases dinámicas que llegan por prop (p. ej. `stroke-fuchsia-400`, paletas).
-3. Declarar la dependencia npm **`d3`** en el wrapper (`lib_dependencies`).
-4. **TDD `line_chart`** (piloto): test primero (existe, importable, `.create(data=...)` → `rx.Component`
-   con `tag`/`library`/props correctos, default = ejemplo) → TSX parametrizado + wrapper Python → verde.
-5. Montar la **galería demo** (sidebar por familia, tarjeta + snippet por gráfica) con el piloto y
-   **verificar que `reflex run` / export compila** sin errores TSX/Tailwind.
+1. Port `ClientTooltip.tsx` into the package as a shared helper; NoSSR wrapper (uses `createPortal`).
+2. Resolve Tailwind V4: ensure the TSX classes are scanned/generated. Define a **safelist**
+   for dynamic classes that arrive via prop (e.g. `stroke-fuchsia-400`, palettes).
+3. Declare the npm dependency **`d3`** in the wrapper (`lib_dependencies`).
+4. **TDD `line_chart`** (pilot): test first (exists, importable, `.create(data=...)` → `rx.Component`
+   with correct `tag`/`library`/props, default = example) → parameterized TSX + Python wrapper → green.
+5. Set up the **demo gallery** (sidebar by family, card + snippet per chart) with the pilot and
+   **verify that `reflex run` / export compiles** without TSX/Tailwind errors.
 
-**Gate de salida de A:** `rxc.line_chart()` renderiza idéntico al original; tests verdes; compila.
+**Stage A exit gate:** `rxc.line_chart()` renders identically to the original; green tests; compiles.
 
-### Etapa B — Fan-out de las 42 restantes (workflow multi-agente por familia)
+### Stage B — Fan-out of the remaining 42 (multi-agent workflow by family)
 
-- Pipeline por familia: line (resto), area, bar, pie/donut, scatter, treemap, radar, other.
-- Cada agente recibe: la **receta probada** (de la Etapa A), el TSX de referencia y el esquema de datos.
-  Porta su gráfica **siguiendo TDD** (test → wrapper + TSX parametrizado → verde), aislada en su módulo,
-  y la re-exporta.
-- Las familias corren en paralelo (todas dependen sólo de la fundación).
+- Pipeline by family: line (rest), area, bar, pie/donut, scatter, treemap, radar, other.
+- Each agent receives: the **proven recipe** (from Stage A), the reference TSX, and the data schema.
+  It ports its chart **following TDD** (test → wrapper + parameterized TSX → green), isolated in its module,
+  and re-exports it.
+- The families run in parallel (they all depend only on the foundation).
 
-### Etapa C — Integración + verificación
+### Stage C — Integration + verification
 
-- Recolectar wrappers; correr **suite pytest completa** (verde, cobertura Python > 70%).
-- Completar la galería con las 43; **verificar que la app compila** (`reflex run`/export) sin errores.
-- **Capturas Playwright** de cada gráfica para comparar contra `reference/` (auditoría de paridad visual
-  por familia).
+- Collect wrappers; run the **full pytest suite** (green, Python coverage > 70%).
+- Complete the gallery with all 43; **verify that the app compiles** (`reflex run`/export) without errors.
+- **Playwright screenshots** of each chart to compare against `reference/` (visual parity audit
+  by family).
 
-## 4. Estructura de archivos (Tech Design §5.1)
+## 4. File structure (Tech Design §5.1)
 
 ```
-reflex_rosencharts/components/<familia>/<name>.tsx   # TSX parametrizado (default = ejemplo)
-reflex_rosencharts/components/<familia>/<name>.py    # wrapper rx.Component + función pública
+reflex_rosencharts/components/<family>/<name>.tsx   # parameterized TSX (default = example)
+reflex_rosencharts/components/<family>/<name>.py    # rx.Component wrapper + public function
 reflex_rosencharts/components/helpers/ClientTooltip.tsx + .py
-reflex_rosencharts/__init__.py                       # re-export de las 43 funciones
-reflex_rosencharts/reflex_rosencharts.py             # galería demo
-tests/test_imports.py                                # smoke: todas importables
-tests/test_<familia>.py                              # TDD por familia (render/props)
+reflex_rosencharts/__init__.py                       # re-export of the 43 functions
+reflex_rosencharts/reflex_rosencharts.py             # demo gallery
+tests/test_imports.py                                # smoke: all importable
+tests/test_<family>.py                              # TDD per family (render/props)
 ```
 
-## 5. Receta de port por gráfica (TDD)
+## 5. Port recipe per chart (TDD)
 
 ```
-RED   → test_<familia>.py: la función existe, es importable, .create(data=...) construye
-         un rx.Component con tag/library/props correctos; default reproduce el ejemplo.
-GREEN → 1. Copiar reference/.../<n>_<Name>.tsx → components/<fam>/<name>.tsx
-         2. Reemplazar datos hardcodeados por prop `data` (default = ejemplo original)
-         3. Ajustar import del helper a la ruta local
-         4. Escribir wrapper Python (rx.asset, library, tag, props tipados; NoSSR si usa portal)
-         5. Re-exportar en components/<fam>/__init__.py y en reflex_rosencharts/__init__.py
-         6. Añadir página/tarjeta de ejemplo en la galería
-REFACTOR → limpiar manteniendo verde.
+RED   → test_<family>.py: the function exists, is importable, .create(data=...) builds
+         an rx.Component with correct tag/library/props; default reproduces the example.
+GREEN → 1. Copy reference/.../<n>_<Name>.tsx → components/<fam>/<name>.tsx
+         2. Replace hardcoded data with the `data` prop (default = original example)
+         3. Adjust the helper import to the local path
+         4. Write the Python wrapper (rx.asset, library, tag, typed props; NoSSR if it uses a portal)
+         5. Re-export in components/<fam>/__init__.py and in reflex_rosencharts/__init__.py
+         6. Add an example page/card to the gallery
+REFACTOR → clean up while keeping it green.
 ```
 
-## 6. Riesgos y mitigaciones (de la sesión)
+## 6. Risks and mitigations (from the session)
 
-| Riesgo | Mitigación |
+| Risk | Mitigation |
 |---|---|
-| Tailwind V4 no genera clases dinámicas por prop | Safelist en config; probado en piloto antes del fan-out |
-| Hidratación por portales (tooltip) | `NoSSRComponent` / dynamic import en gráficas con tooltip |
-| Agentes divergen de la receta | Receta probada y verificada en Etapa A antes del fan-out; cada agente la recibe literal |
-| Paridad visual difícil de auto-verificar | Capturas Playwright vs `reference/`; revisión final manual con la demo |
+| Tailwind V4 does not generate dynamic classes from props | Safelist in config; proven in the pilot before the fan-out |
+| Hydration from portals (tooltip) | `NoSSRComponent` / dynamic import in charts with a tooltip |
+| Agents diverge from the recipe | Recipe proven and verified in Stage A before the fan-out; each agent receives it verbatim |
+| Visual parity hard to auto-verify | Playwright screenshots vs `reference/`; final manual review with the demo |
 
-## 7. Definición de Done (global)
+## 7. Definition of Done (global)
 
-- [ ] 43 wrappers Python + TSX parametrizados, re-exportados.
-- [ ] Tests pytest verdes (TDD), cobertura Python > 70%.
-- [ ] Galería demo con las 43 (tarjeta + snippet) y `reflex run` compila.
-- [ ] Capturas Playwright de las 43 vs `reference/`.
+- [ ] 43 Python wrappers + parameterized TSX, re-exported.
+- [ ] Green pytest tests (TDD), Python coverage > 70%.
+- [ ] Demo gallery with all 43 (card + snippet) and `reflex run` compiles.
+- [ ] Playwright screenshots of all 43 vs `reference/`.

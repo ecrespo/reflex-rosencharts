@@ -1,6 +1,6 @@
 # reflex-rosencharts — Implementation Plan (43 charts + demo gallery)
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Use superpowers:test-driven-development for every wrapper. The 42 non-pilot charts are dispatched via a multi-agent Workflow after the pilot recipe is proven (Etapa A gate).
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Use superpowers:test-driven-development for every wrapper. The 42 non-pilot charts are dispatched via a multi-agent Workflow after the pilot recipe is proven (Stage A gate).
 
 **Goal:** Port all 43 rosencharts D3/TSX charts to Reflex Python components, each with a parametrized TSX, a typed Python wrapper, a TDD test, and an example page in a navigable demo gallery.
 
@@ -20,7 +20,7 @@
 
 ---
 
-## Etapa A — Foundation + pilot (sequential, by the lead; proves the recipe)
+## Stage A — Foundation + pilot (sequential, by the lead; proves the recipe)
 
 ### Task A0: Branch + test harness
 
@@ -147,15 +147,15 @@ def test_line_chart_default_data_matches_example():
 
 **Steps:**
 1. Run `uv run reflex export --no-zip` (or `reflex run` briefly) → Expected: builds with no TSX/Tailwind errors.
-2. Screenshot the pilot page (Playwright, Etapa C tooling) and eyeball vs `reference/`.
-3. If broken, fix recipe HERE before any fan-out. **Do not proceed to Etapa B until this gate passes.**
+2. Screenshot the pilot page (Playwright, Stage C tooling) and eyeball vs `reference/`.
+3. If broken, fix recipe HERE before any fan-out. **Do not proceed to Stage B until this gate passes.**
 4. Commit any fixes; tag the proven recipe in `CONTRIBUTING.md` (port recipe section).
 
 ---
 
-## Etapa B — Fan-out: remaining 42 charts (multi-agent Workflow, by family)
+## Stage B — Fan-out: remaining 42 charts (multi-agent Workflow, by family)
 
-**Precondition:** Etapa A gate passed. The proven recipe + the pilot files serve as the template each agent copies.
+**Precondition:** Stage A gate passed. The proven recipe + the pilot files serve as the template each agent copies.
 
 **Per-chart task template (each agent runs this, TDD):**
 
@@ -192,7 +192,7 @@ REFACTOR → keep green; commit `feat(<family>): port <name>`
 
 ---
 
-## Etapa C — Integration + verification
+## Stage C — Integration + verification
 
 ### Task C1: Full test suite + coverage
 - Run `uv run pytest --cov=reflex_rosencharts --cov-report=term-missing` → Expected: all green, coverage > 70%.

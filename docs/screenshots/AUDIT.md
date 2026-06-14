@@ -1,30 +1,30 @@
-# Auditoría de paridad visual — 43/43
+# Visual parity audit — 43/43
 
-Capturas tomadas de la galería demo (`reflex run`) con Playwright + Chrome del sistema
-(`scripts/screenshot_gallery.py`), datos por defecto = ejemplo original de cada gráfica.
+Screenshots taken from the demo gallery (`reflex run`) with Playwright + system Chrome
+(`scripts/screenshot_gallery.py`), default data = original example of each chart.
 
-- **`_gallery_full.png`** — galería completa (sidebar + 43 tarjetas).
-- **`<name>.png`** — una por gráfica (43 archivos).
+- **`_gallery_full.png`** — full gallery (sidebar + 43 cards).
+- **`<name>.png`** — one per chart (43 files).
 
-## Resultado
+## Result
 
-- **43/43 gráficas renderizan** con la estética de rosencharts (D3 + Tailwind), sin tarjetas en blanco.
-- Revisión representativa por familia (técnicas de render distintas): `line_chart` (SVG+D3),
-  `bar_chart_horizontal` (DIV), `bar_chart_flags_horizontal` (banderas), `donut_chart_center_text`
-  (SVG + texto central), `treemap_chart` (DIV anidado), `radar_chart` (polígono), `scatter_chart`.
-  Todas coinciden con el original.
-- `reflex export` compila los 43 TSX juntos (exit 0).
-- 83 tests pytest verdes; cobertura 89% de los wrappers Python.
+- **43/43 charts render** with the rosencharts aesthetic (D3 + Tailwind), with no blank cards.
+- Representative review by family (different render techniques): `line_chart` (SVG+D3),
+  `bar_chart_horizontal` (DIV), `bar_chart_flags_horizontal` (flags), `donut_chart_center_text`
+  (SVG + center text), `treemap_chart` (nested DIV), `radar_chart` (polygon), `scatter_chart`.
+  All match the original.
+- `reflex export` compiles all 43 TSX files together (exit 0).
+- 83 pytest tests green; 89% coverage of the Python wrappers.
 
-## Limitaciones conocidas
+## Known limitations
 
-- **`bar_chart_horizontal_logo`**: los logos son SVGs inline del original (no data-driven). Se
-  preservan verbatim y se asignan por índice de fila; `data` controla keys/values/colores pero no
-  las imágenes de logo. Documentado en el docstring del wrapper.
+- **`bar_chart_horizontal_logo`**: the logos are inline SVGs from the original (not data-driven). They are
+  preserved verbatim and assigned by row index; `data` controls keys/values/colors but not
+  the logo images. Documented in the wrapper docstring.
 
-## Cómo regenerar
+## How to regenerate
 
 ```bash
-uv run reflex run                                   # en una terminal
-PYTHONPATH=. .venv/bin/python scripts/screenshot_gallery.py   # en otra
+uv run reflex run                                   # in one terminal
+PYTHONPATH=. .venv/bin/python scripts/screenshot_gallery.py   # in another
 ```
