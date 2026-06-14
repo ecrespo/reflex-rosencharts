@@ -13,3 +13,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Coverage
+.coverage
+
+# IDE
+.idea/
