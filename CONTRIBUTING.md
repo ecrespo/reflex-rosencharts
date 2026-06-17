@@ -10,27 +10,35 @@ A repeatable pattern for porting each chart. Details in
 2. **Parametrize the data**: replace the hardcoded `data` with a prop whose default matches the
    original example:
    ```tsx
-   export function LineChart({ data = DEFAULT_DATA, color = "stroke-fuchsia-400" }) { ... }
+   const defaultData = [ ...ejemplo original... ];
+   export function ChartName({ data = defaultData, color = "..." }: {...}) {
+     if (data.length === 0) return <div className="relative h-72 w-full" />;
+     // ... mapear/escalas a partir de `data`
+   }
    ```
 3. **Adjust the helper imports** to the local path (`./helpers/ClientTooltip` or relative).
 4. **Python wrapper** (`<name>.py`):
    ```python
-   import reflex as rx
    from typing import TypedDict
+   import reflex as rx
+   from ..helpers.client_tooltip import client_tooltip_asset  # sólo si usa tooltip
 
    class LinePoint(TypedDict):
        date: str
        value: float
 
-   _path = rx.asset("./line_chart.tsx", shared=True)
+   _DEFAULT_DATA: list[LinePoint] = [ ...ejemplo... ]
+
+   client_tooltip_asset()                       # sólo si usa tooltip (lo hace viajar)
+   _PATH = rx.asset("line_chart.tsx", shared=True)
 
    class LineChart(rx.Component):          # NoSSRComponent if it uses portal/tooltip
        library = f"$/public{_path}"
        tag = "LineChart"
        is_default = False
-       data: rx.Var[list[LinePoint]] = rx.Var.create([])
+       lib_dependencies: list[str] = ["d3"]      # si el TSX importa de "d3"
+       data: rx.Var[list[LinePoint]] = rx.Var.create(_DEFAULT_DATA)
        color: rx.Var[str] = rx.Var.create("stroke-fuchsia-400")
-       on_point_hover: rx.EventHandler[rx.event.passthrough_event_spec(dict)]
 
    def line_chart(**props) -> rx.Component:
        return LineChart.create(**props)
