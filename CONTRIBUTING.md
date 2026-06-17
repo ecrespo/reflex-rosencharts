@@ -6,7 +6,7 @@ A repeatable pattern for porting each chart. Details in
 ## Steps per chart
 
 1. **Copy** `reference/rosencharts/<family>/<n>_<Name>.tsx`
-   → `reflex_rosencharts/components/<family>/<name>.tsx`.
+   → `custom_components/reflex_rosencharts/components/<family>/<name>.tsx`.
 2. **Parametrize the data**: replace the hardcoded `data` with a prop whose default matches the
    original example:
    ```tsx
@@ -35,8 +35,8 @@ A repeatable pattern for porting each chart. Details in
    def line_chart(**props) -> rx.Component:
        return LineChart.create(**props)
    ```
-5. **Re-export** in `components/<family>/__init__.py` and in `reflex_rosencharts/__init__.py`.
-6. **Example** in the gallery (`reflex_rosencharts/reflex_rosencharts.py`).
+5. **Re-export** in `components/<family>/__init__.py` and in `custom_components/reflex_rosencharts/__init__.py`.
+6. **Example** in the gallery / demo app (`reflex_rosencharts_demo/reflex_rosencharts_demo.py`).
 7. **Tests**: import + render; **visual comparison** via screenshot against `reference/`.
 
 ## Rules

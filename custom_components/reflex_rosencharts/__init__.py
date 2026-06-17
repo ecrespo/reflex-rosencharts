@@ -10,5 +10,13 @@ will be re-exported here as they are ported (phases F1-F7 of the plan).
 
 __version__ = "0.1.2"
 
+# Shared base wrapper (concrete charts subclass this).
+from .reflex_rosencharts import RosenChart, rosen_chart  # noqa: F401
+
 # Re-export example (enabled as each chart is ported):
 # from .components.line.line_chart import line_chart  # noqa: F401
+
+__all__ = [
+    "RosenChart",
+    "rosen_chart",
+]
