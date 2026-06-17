@@ -2,237 +2,237 @@
 
 ## Product Requirements Document (PRD)
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **Autor** | Ernesto Crespo |
-| **Estado** | `DRAFT` |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-06-14 |
+| **Author** | Ernesto Crespo |
+| **Status** | `DRAFT` |
+| **Version** | 1.0 |
+| **Date** | 2026-06-14 |
 | **Reviewers** | — |
-| **Última actualización** | 2026-06-14 |
+| **Last updated** | 2026-06-14 |
 
 ---
 
-## 1. Resumen Ejecutivo
+## 1. Executive Summary
 
-`reflex-rosencharts` es un **custom component de Reflex** que porta la librería de gráficas
-[rosencharts](https://github.com/Filsommer/rosenCharts) (43 componentes React/TSX construidos con
-D3.js y Tailwind CSS) al ecosistema **Reflex**, permitiendo a desarrolladores Python construir
-dashboards y visualizaciones sin escribir JavaScript.
+`reflex-rosencharts` is a **Reflex custom component** that ports the charting library
+[rosencharts](https://github.com/Filsommer/rosenCharts) (43 React/TSX components built with
+D3.js and Tailwind CSS) to the **Reflex** ecosystem, allowing Python developers to build
+dashboards and visualizations without writing JavaScript.
 
-Está dirigido a desarrolladores Python que usan Reflex y necesitan gráficas modernas, ligeras y
-estéticas. Resuelve el problema de que rosencharts hoy solo es consumible como "copy-paste" de
-TSX dentro de proyectos React/Next.js; este port expone cada gráfica como una función Python
-(`rxc.line_chart(...)`, `rxc.donut_chart(...)`, etc.) con props tipados y datos pasados desde el
-estado de la aplicación.
+It targets Python developers using Reflex who need modern, lightweight, and
+aesthetic charts. It solves the problem that rosencharts today is only consumable as a "copy-paste" of
+TSX inside React/Next.js projects; this port exposes each chart as a Python function
+(`rxc.line_chart(...)`, `rxc.donut_chart(...)`, etc.) with typed props and data passed from the
+application state.
 
-## 2. Contexto y Problema
+## 2. Context and Problem
 
-### 2.1 Situación Actual
-- rosencharts es una colección de 43 componentes `.tsx` (no es un paquete npm) que el usuario
-  copia y pega en su proyecto React, instalando `d3` y `@types/d3` manualmente.
-- Cada componente trae **datos hardcodeados** y clases **Tailwind** para el estilo.
-- 29 de las 43 gráficas dependen de un helper local `ClientTooltip.tsx` (usa `react-dom` / `createPortal`).
-- No existe ninguna forma de usar estas gráficas desde Python/Reflex.
+### 2.1 Current Situation
+- rosencharts is a collection of 43 `.tsx` components (it is not an npm package) that the user
+  copies and pastes into their React project, installing `d3` and `@types/d3` manually.
+- Each component ships with **hardcoded data** and **Tailwind** classes for styling.
+- 29 of the 43 charts depend on a local helper `ClientTooltip.tsx` (using `react-dom` / `createPortal`).
+- There is no way to use these charts from Python/Reflex.
 
-### 2.2 Problema
-Los desarrolladores de Reflex no tienen acceso a estas gráficas. Las opciones nativas de Reflex
-(recharts, plotly) tienen una estética distinta. Reescribir 43 gráficas D3 a mano en cada proyecto
-es costoso y propenso a errores.
+### 2.2 Problem
+Reflex developers do not have access to these charts. Reflex's native options
+(recharts, plotly) have a different aesthetic. Rewriting 43 D3 charts by hand in each project
+is costly and error-prone.
 
-### 2.3 Oportunidad
-Reflex soporta **wrapping de componentes React locales** (`rx.asset` + `library="$/public..."`).
-Empaquetando los TSX de rosencharts como componentes locales y exponiéndolos como clases
-`rx.Component`, se obtiene una librería reutilizable, instalable vía `pip`/`uv`, que cubre las 8
-familias de gráficas con un único API Python coherente.
+### 2.3 Opportunity
+Reflex supports **wrapping local React components** (`rx.asset` + `library="$/public..."`).
+By packaging the rosencharts TSX files as local components and exposing them as
+`rx.Component` classes, you get a reusable library, installable via `pip`/`uv`, that covers the 8
+chart families with a single coherent Python API.
 
-## 3. Usuarios Objetivo
+## 3. Target Users
 
-### Persona 1: Desarrollador Python / Reflex
-- **Descripción:** Construye aplicaciones web data-driven en Python con Reflex.
-- **Necesidad principal:** Insertar gráficas atractivas pasando datos desde `rx.State`.
-- **Frecuencia de uso:** Diaria durante desarrollo de dashboards.
-- **Nivel técnico:** Medio/Alto en Python, bajo/nulo en React/D3.
+### Persona 1: Python / Reflex Developer
+- **Description:** Builds data-driven web applications in Python with Reflex.
+- **Main need:** Insert attractive charts by passing data from `rx.State`.
+- **Usage frequency:** Daily during dashboard development.
+- **Technical level:** Medium/High in Python, low/none in React/D3.
 
-### Persona 2: Data Scientist / Analista
-- **Descripción:** Crea prototipos de visualización y reportes internos.
-- **Necesidad principal:** Gráficas listas para usar con poca configuración.
-- **Frecuencia de uso:** Semanal.
-- **Nivel técnico:** Medio en Python, bajo en frontend.
+### Persona 2: Data Scientist / Analyst
+- **Description:** Creates visualization prototypes and internal reports.
+- **Main need:** Ready-to-use charts with little configuration.
+- **Usage frequency:** Weekly.
+- **Technical level:** Medium in Python, low in frontend.
 
-### Persona 3: Contribuidor de la librería
-- **Descripción:** Mantiene/extiende el port.
-- **Necesidad principal:** Un patrón claro y repetible para portar cada gráfica.
-- **Frecuencia de uso:** Eventual.
-- **Nivel técnico:** Alto en Python y React.
+### Persona 3: Library Contributor
+- **Description:** Maintains/extends the port.
+- **Main need:** A clear and repeatable pattern for porting each chart.
+- **Usage frequency:** Occasional.
+- **Technical level:** High in Python and React.
 
-## 4. Objetivos y Métricas de Éxito
+## 4. Goals and Success Metrics
 
-### 4.1 Objetivos del Proyecto
+### 4.1 Project Goals
 
-| Objetivo | Métrica | Target | Plazo |
+| Goal | Metric | Target | Timeframe |
 |---|---|---|---|
-| Cobertura de gráficas | % de gráficas portadas de las 43 | 100% | Fin Fase 7 |
-| Ejemplos de uso | Cada gráfica con un ejemplo ejecutable en la demo app | 43/43 | Fin Fase 7 |
-| Paridad visual | Diferencia visual aceptable vs. original (revisión por captura) | ≥ 95% similar | Por gráfica |
-| Publicación | Paquete instalable (`pip install reflex-rosencharts`) | Publicado en PyPI | Fase 8 |
+| Chart coverage | % of the 43 charts ported | 100% | End of Phase 7 |
+| Usage examples | Each chart with a runnable example in the demo app | 43/43 | End of Phase 7 |
+| Visual parity | Acceptable visual difference vs. original (review by screenshot) | ≥ 95% similar | Per chart |
+| Publication | Installable package (`pip install reflex-rosencharts`) | Published on PyPI | Phase 8 |
 
-### 4.2 Objetivos de Usuario
+### 4.2 User Goals
 
-| Objetivo del Usuario | Indicador |
+| User Goal | Indicator |
 |---|---|
-| Insertar una gráfica en < 5 líneas Python | Snippet en README por gráfica |
-| Pasar datos desde el estado sin tocar JS | Todas las gráficas aceptan `data` como prop |
-| Theming consistente (claro/oscuro) | Soporte de dark mode vía Tailwind |
+| Insert a chart in < 5 lines of Python | Snippet in README per chart |
+| Pass data from state without touching JS | All charts accept `data` as a prop |
+| Consistent theming (light/dark) | Dark mode support via Tailwind |
 
-## 5. Alcance
+## 5. Scope
 
-### 5.1 In Scope (Incluido)
-- [ ] Port de las **43 gráficas** en 8 familias: area (4), bar (12), line (8), pie/donut (8), scatter (4), treemap (3), radar (2), other (2).
-- [ ] Parametrización de **datos** (sustituir los datos hardcodeados por props alimentados desde Python).
-- [ ] Port del helper `ClientTooltip` (requerido por 29 gráficas).
-- [ ] Integración de **Tailwind CSS** en el build de Reflex.
-- [ ] Una **demo app** (`reflex_rosencharts/reflex_rosencharts.py`) con una página de ejemplo por gráfica (la "carpeta examples").
-- [ ] Documentación: README + docstrings + página de galería.
-- [ ] Empaquetado como custom component de Reflex publicable.
+### 5.1 In Scope (Included)
+- [ ] Port of the **43 charts** across 8 families: area (4), bar (12), line (8), pie/donut (8), scatter (4), treemap (3), radar (2), other (2).
+- [ ] Parameterization of **data** (replace the hardcoded data with props fed from Python).
+- [ ] Port of the `ClientTooltip` helper (required by 29 charts).
+- [ ] Integration of **Tailwind CSS** into the Reflex build.
+- [ ] A **demo app** (`reflex_rosencharts/reflex_rosencharts.py`) with one example page per chart (the "examples folder").
+- [ ] Documentation: README + docstrings + gallery page.
+- [ ] Packaging as a publishable Reflex custom component.
 
-### 5.2 Out of Scope (Excluido)
-- Crear gráficas nuevas que no existan en rosencharts — sólo se portan las existentes.
-- Backends de datos, autenticación o persistencia — la librería sólo renderiza.
-- Animaciones/interacciones no presentes en el original.
-- Versionar/parchear D3 más allá de lo necesario para renderizar.
+### 5.2 Out of Scope (Excluded)
+- Creating new charts that do not exist in rosencharts — only the existing ones are ported.
+- Data backends, authentication, or persistence — the library only renders.
+- Animations/interactions not present in the original.
+- Versioning/patching D3 beyond what is necessary to render.
 
-### 5.3 Futuras Consideraciones
-- Exportar gráficas a PNG/SVG.
-- Tematización por tokens (paletas configurables) en lugar de clases Tailwind fijas.
-- Soporte de streaming/actualización en tiempo real de datos.
+### 5.3 Future Considerations
+- Export charts to PNG/SVG.
+- Token-based theming (configurable palettes) instead of fixed Tailwind classes.
+- Support for streaming/real-time data updates.
 
-## 6. Requisitos Funcionales
+## 6. Functional Requirements
 
-### RF-001: Renderizar cada gráfica como componente Reflex
-- **Descripción:** El sistema debe exponer cada una de las 43 gráficas como una función Python que retorna un `rx.Component`.
-- **Actor:** Desarrollador Python.
-- **Precondiciones:** `reflex-rosencharts` instalado; Tailwind habilitado.
-- **Flujo principal:**
-  1. El desarrollador importa `reflex_rosencharts as rxc`.
-  2. Llama a `rxc.<grafica>(data=...)` dentro de una página Reflex.
-  3. Reflex compila el TSX local y renderiza la gráfica.
-- **Postcondiciones:** La gráfica se muestra con los datos provistos.
-- **Prioridad:** `MUST`
+### RF-001: Render each chart as a Reflex component
+- **Description:** The system must expose each of the 43 charts as a Python function that returns an `rx.Component`.
+- **Actor:** Python developer.
+- **Preconditions:** `reflex-rosencharts` installed; Tailwind enabled.
+- **Main flow:**
+  1. The developer imports `reflex_rosencharts as rxc`.
+  2. Calls `rxc.<chart>(data=...)` inside a Reflex page.
+  3. Reflex compiles the local TSX and renders the chart.
+- **Postconditions:** The chart is displayed with the provided data.
+- **Priority:** `MUST`
 
-### RF-002: Alimentar datos desde el estado
-- **Descripción:** Cada gráfica debe aceptar su dataset vía prop `data` (y props específicos) tipados con `rx.Var`.
-- **Actor:** Desarrollador Python.
-- **Flujo principal:** El dato vive en `rx.State`; al cambiar, la gráfica se re-renderiza.
-- **Prioridad:** `MUST`
+### RF-002: Feed data from state
+- **Description:** Each chart must accept its dataset via the `data` prop (and specific props) typed with `rx.Var`.
+- **Actor:** Python developer.
+- **Main flow:** The data lives in `rx.State`; when it changes, the chart re-renders.
+- **Priority:** `MUST`
 
-### RF-003: Tooltips interactivos
-- **Descripción:** Las gráficas que en el original usan `ClientTooltip` deben mostrar el mismo tooltip al hacer hover.
-- **Precondiciones:** Helper `ClientTooltip` portado y disponible.
-- **Prioridad:** `SHOULD`
+### RF-003: Interactive tooltips
+- **Description:** Charts that use `ClientTooltip` in the original must show the same tooltip on hover.
+- **Preconditions:** `ClientTooltip` helper ported and available.
+- **Priority:** `SHOULD`
 
-### RF-004: Ejemplo ejecutable por gráfica
-- **Descripción:** El sistema debe incluir una página de ejemplo por gráfica en la demo app, replicando el "example" del repo original.
-- **Prioridad:** `MUST`
+### RF-004: Runnable example per chart
+- **Description:** The system must include one example page per chart in the demo app, replicating the "example" from the original repo.
+- **Priority:** `MUST`
 
-### RF-005: Soporte de dark mode
-- **Descripción:** Las gráficas deben respetar las variantes `dark:` de Tailwind como en el original.
-- **Prioridad:** `SHOULD`
+### RF-005: Dark mode support
+- **Description:** Charts must respect Tailwind's `dark:` variants as in the original.
+- **Priority:** `SHOULD`
 
-### RF-006: Props de estilo/tamaño
-- **Descripción:** Cada gráfica debe permitir ajustar dimensiones y, donde aplique, colores/paleta.
-- **Prioridad:** `COULD`
+### RF-006: Style/size props
+- **Description:** Each chart must allow adjusting dimensions and, where applicable, colors/palette.
+- **Priority:** `COULD`
 
-## 7. Requisitos No Funcionales
+## 7. Non-Functional Requirements
 
-### Rendimiento
-- El tiempo de compilación incremental de Reflex no debe degradarse notablemente; las gráficas son componentes ligeros (D3 en cliente).
-- El render inicial de una página con una gráfica debe ser < 1s en local.
+### Performance
+- Reflex's incremental compilation time must not degrade noticeably; the charts are lightweight components (D3 on the client).
+- The initial render of a page with a chart must be < 1s locally.
 
-### Mantenibilidad
-- Patrón de port **repetible y documentado** (una receta por tipo de gráfica).
-- Cobertura de tests > 70% del código Python de wrappers.
-- Cada wrapper en su propio módulo dentro de la familia correspondiente.
+### Maintainability
+- A **repeatable and documented** port pattern (one recipe per chart type).
+- Test coverage > 70% of the Python wrapper code.
+- Each wrapper in its own module within the corresponding family.
 
-### Compatibilidad
-- Python ≥ 3.10 (proyecto fijado a 3.13).
+### Compatibility
+- Python ≥ 3.10 (project pinned to 3.13).
 - Reflex ≥ 0.9.x.
-- Navegadores evergreen (Chrome, Firefox, Safari, Edge).
+- Evergreen browsers (Chrome, Firefox, Safari, Edge).
 
-### Observabilidad
-- Errores de compilación de TSX deben ser visibles en la consola de Reflex.
+### Observability
+- TSX compilation errors must be visible in the Reflex console.
 
-## 8. Restricciones y Dependencias
+## 8. Constraints and Dependencies
 
-### Restricciones Técnicas
-- rosencharts **no es un paquete npm**: hay que tratar los TSX como **componentes locales** (`rx.asset`).
-- Las gráficas usan **Tailwind**: requiere habilitar el plugin Tailwind de Reflex.
-- `ClientTooltip` usa `react-dom`/`createPortal`: candidatas a `NoSSRComponent` donde sea necesario.
-- Datos hardcodeados en cada TSX → refactor para recibir `props`.
+### Technical Constraints
+- rosencharts **is not an npm package**: the TSX files must be treated as **local components** (`rx.asset`).
+- The charts use **Tailwind**: this requires enabling Reflex's Tailwind plugin.
+- `ClientTooltip` uses `react-dom`/`createPortal`: candidates for `NoSSRComponent` where necessary.
+- Hardcoded data in each TSX → refactor to receive `props`.
 
-### Restricciones de Negocio / Licencia
-- rosencharts es **MIT**: el port debe conservar la atribución y licencia MIT.
+### Business / License Constraints
+- rosencharts is **MIT**: the port must preserve the MIT attribution and license.
 
-### Dependencias Externas
+### External Dependencies
 
-| Dependencia | Tipo | Owner | Estado | Riesgo |
+| Dependency | Type | Owner | Status | Risk |
 |---|---|---|---|---|
-| Reflex (framework) | Runtime | reflex-dev | Estable | Bajo |
-| D3.js | Runtime (npm) | d3 | Estable | Bajo |
-| Tailwind CSS | Build | tailwindlabs | Estable | Medio (config en Reflex) |
-| rosencharts (código fuente TSX) | Fuente | Filsommer | Estable | Bajo |
-| react-dom (portales tooltip) | Runtime | Meta | Estable | Bajo |
+| Reflex (framework) | Runtime | reflex-dev | Stable | Low |
+| D3.js | Runtime (npm) | d3 | Stable | Low |
+| Tailwind CSS | Build | tailwindlabs | Stable | Medium (config in Reflex) |
+| rosencharts (TSX source code) | Source | Filsommer | Stable | Low |
+| react-dom (tooltip portals) | Runtime | Meta | Stable | Low |
 
 ## 9. User Stories
 
-### Épica: Galería de gráficas en Python
+### Epic: Chart gallery in Python
 
-**US-001:** Como desarrollador Reflex, quiero llamar `rxc.line_chart(data=mi_serie)`, para mostrar una línea sin escribir JS.
-- Criterios de aceptación:
-  - [ ] La función existe y acepta `data` tipado.
-  - [ ] La gráfica renderiza igual que el ejemplo original.
+**US-001:** As a Reflex developer, I want to call `rxc.line_chart(data=my_series)`, to display a line without writing JS.
+- Acceptance criteria:
+  - [ ] The function exists and accepts typed `data`.
+  - [ ] The chart renders the same as the original example.
 
-**US-002:** Como analista, quiero una galería con todos los ejemplos, para elegir la gráfica adecuada.
-- Criterios de aceptación:
-  - [ ] La demo app lista las 43 gráficas con su ejemplo.
+**US-002:** As an analyst, I want a gallery with all the examples, to choose the right chart.
+- Acceptance criteria:
+  - [ ] The demo app lists the 43 charts with their example.
 
-**US-003:** Como contribuidor, quiero una guía de port por tipo, para añadir gráficas siguiendo un patrón.
-- Criterios de aceptación:
-  - [ ] Tech Design documenta la receta de wrapping.
+**US-003:** As a contributor, I want a port guide per type, to add charts following a pattern.
+- Acceptance criteria:
+  - [ ] The Tech Design documents the wrapping recipe.
 
 ## 10. Wireframes / Mockups
-- Galería: barra lateral con familias (Area, Bar, Line, Pie, Scatter, Treemap, Radar, Other) y, por cada una, tarjetas con la gráfica + snippet de código. Referencia visual: los archivos `reference/rosencharts/*`.
+- Gallery: sidebar with families (Area, Bar, Line, Pie, Scatter, Treemap, Radar, Other) and, for each one, cards with the chart + code snippet. Visual reference: the `reference/rosencharts/*` files.
 
-## 11. Riesgos y Mitigaciones
+## 11. Risks and Mitigations
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Configuración de Tailwind en Reflex compleja | Media | Alto | Spike inicial en Fase 1; documentar config |
-| Tooltips con portales no compatibles con SSR | Media | Medio | Usar `NoSSRComponent` / dynamic import |
-| Refactor de datos rompe la estética | Media | Medio | Comparación por captura contra original |
-| Cambios de versión de Reflex en su API de wrapping | Baja | Medio | Fijar versión de Reflex en pyproject |
+| Complex Tailwind configuration in Reflex | Medium | High | Initial spike in Phase 1; document config |
+| Portal-based tooltips not compatible with SSR | Medium | Medium | Use `NoSSRComponent` / dynamic import |
+| Data refactor breaks the aesthetic | Medium | Medium | Screenshot comparison against original |
+| Reflex version changes in its wrapping API | Low | Medium | Pin the Reflex version in pyproject |
 
-## 12. Timeline Estimado
+## 12. Estimated Timeline
 
-| Fase | Duración Estimada | Entregable |
+| Phase | Estimated Duration | Deliverable |
 |---|---|---|
-| Spec & Design | 0.5 semana | Specs aprobados |
-| Fundación (Tailwind + helper + patrón) | 1 semana | 1ª gráfica funcionando |
-| Port por familias | 3-4 semanas | 43 gráficas + ejemplos |
-| Demo/galería + docs | 1 semana | Galería navegable |
-| Empaquetado y publicación | 0.5 semana | Paquete en PyPI |
+| Spec & Design | 0.5 week | Approved specs |
+| Foundation (Tailwind + helper + pattern) | 1 week | 1st chart working |
+| Port by families | 3-4 weeks | 43 charts + examples |
+| Demo/gallery + docs | 1 week | Navigable gallery |
+| Packaging and publication | 0.5 week | Package on PyPI |
 
 ---
 
-## Historial de Cambios
+## Change History
 
-| Versión | Fecha | Autor | Cambios |
+| Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | 2026-06-14 | Ernesto Crespo | Versión inicial |
+| 1.0 | 2026-06-14 | Ernesto Crespo | Initial version |
 
-## Aprobaciones
+## Approvals
 
-| Rol | Nombre | Fecha | Estado |
+| Role | Name | Date | Status |
 |---|---|---|---|
-| Owner | Ernesto Crespo | | ☐ Pendiente |
-| Tech Lead | | | ☐ Pendiente |
+| Owner | Ernesto Crespo | | ☐ Pending |
+| Tech Lead | | | ☐ Pending |

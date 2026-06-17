@@ -1,33 +1,33 @@
-# Especificaciones SDD — reflex-rosencharts
+# SDD Specifications — reflex-rosencharts
 
-Este directorio contiene las especificaciones del proyecto siguiendo la metodología
-**Spec-Driven Design (SDD)**: las specs son el artefacto primario y se aprueban *antes*
-de escribir el código de cada gráfica.
+This directory contains the project specifications following the
+**Spec-Driven Design (SDD)** methodology: the specs are the primary artifact and are approved
+*before* the code for each chart is written.
 
-## Flujo SDD
+## SDD flow
 
 ```
-PRD (El Qué) → API Spec (Contrato Python) → Tech Design (El Cómo) → Data Model → Implementation Plan (Fases)
+PRD (The What) → API Spec (Python Contract) → Tech Design (The How) → Data Model → Implementation Plan (Phases)
 ```
 
-## Índice de documentos
+## Document index
 
-| # | Documento | Ruta | Estado |
+| # | Document | Path | Status |
 |---|-----------|------|--------|
 | 1 | Product Requirements Document | [prd/reflex-rosencharts-prd.md](prd/reflex-rosencharts-prd.md) | DRAFT |
-| 2 | API Spec (API pública Python de la librería) | [api/component-api-v1.md](api/component-api-v1.md) | DRAFT |
+| 2 | API Spec (library's public Python API) | [api/component-api-v1.md](api/component-api-v1.md) | DRAFT |
 | 3 | Technical Design | [technical/architecture.md](technical/architecture.md) | DRAFT |
-| 4 | Data Model (esquemas de datos de las gráficas) | [data-model/chart-data-schemas.md](data-model/chart-data-schemas.md) | DRAFT |
-| 5 | Implementation Plan (por fases) | [plans/implementation-plan.md](plans/implementation-plan.md) | DRAFT |
+| 4 | Data Model (chart data schemas) | [data-model/chart-data-schemas.md](data-model/chart-data-schemas.md) | DRAFT |
+| 5 | Implementation Plan (by phases) | [plans/implementation-plan.md](plans/implementation-plan.md) | DRAFT |
 
-## Naturaleza del proyecto
+## Nature of the project
 
-`reflex-rosencharts` es un **port** de la librería [rosencharts](https://github.com/Filsommer/rosenCharts)
-(43 componentes de gráficas en React/TSX basados en D3.js + Tailwind) a un **custom component
-de [Reflex](https://reflex.dev/)** publicable en PyPI, de modo que se puedan usar las gráficas
-desde Python puro.
+`reflex-rosencharts` is a **port** of the [rosencharts](https://github.com/Filsommer/rosenCharts)
+library (43 chart components in React/TSX based on D3.js + Tailwind) to a **custom component
+for [Reflex](https://reflex.dev/)** publishable on PyPI, so the charts can be used
+from pure Python.
 
-Como es una librería de componentes (no un servicio REST), las plantillas SDD se adaptan así:
-- **API Spec** documenta la API pública de Python (funciones de componente, props, event handlers).
-- **Data Model** documenta los esquemas de datos de cada gráfica (`TypedDict` / `rx.PropsBase`).
-- No hay endpoints HTTP, base de datos ni colas; las secciones correspondientes se omiten o reinterpretan.
+Since it is a component library (not a REST service), the SDD templates are adapted as follows:
+- **API Spec** documents the public Python API (component functions, props, event handlers).
+- **Data Model** documents the data schemas of each chart (`TypedDict` / `rx.PropsBase`).
+- There are no HTTP endpoints, database, or queues; the corresponding sections are omitted or reinterpreted.

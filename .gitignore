@@ -14,11 +14,8 @@ wheels/
 # Virtual environments
 .venv
 
-# coverage
+# Coverage
 .coverage
-htmlcov/
 
-# build artifacts
-dist/
-build/
-*.egg-info/
+# IDE
+.idea/
