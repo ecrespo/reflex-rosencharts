@@ -1,18 +1,17 @@
 # reflex-rosencharts
 
-Port of the charting library [**rosencharts**](https://github.com/Filsommer/rosenCharts)
-(43 React/TSX components with D3.js + Tailwind) to a **custom component for
+A port of the [**rosencharts**](https://github.com/Filsommer/rosenCharts) charting library
+(43 React/TSX components built with D3.js + Tailwind) to a **custom component for
 [Reflex](https://reflex.dev/)**, so the charts can be used from pure Python.
 
-> Status: **43/43 charts implemented** ✅ — all with a Python wrapper, parameterized TSX,
-> a gallery example, and tests. The demo app (`reflex run`) shows all 43 with their usage snippet.
-> Screenshots in [`docs/screenshots/`](docs/screenshots/).
+> Status: **scaffold + SDD plan**. The charts are implemented in phases according to
+> [`specs/plans/implementation-plan.md`](specs/plans/implementation-plan.md).
 
 ## Why?
 
-rosencharts is not an npm package: it is a set of `.tsx` components meant to be copied and pasted, with
+rosencharts is not an npm package: it's a set of `.tsx` components to copy and paste, with
 hardcoded data and Tailwind styling. This project wraps them as **local Reflex components**
-(`rx.asset` + `library="$/public..."`), parameterizes them to receive data from `rx.State`, and
+(`rx.asset` + `library="$/public..."`), parametrizes them to receive data from `rx.State`, and
 exposes them as Python functions:
 
 ```python
@@ -28,7 +27,7 @@ def index() -> rx.Component:
 
 ## Charts (43 across 8 families)
 
-| Family | No. | Examples |
+| Family | # | Examples |
 |---|---|---|
 | Area | 4 | `area_chart`, `area_chart_gradient` |
 | Bar | 12 | `bar_chart_horizontal`, `bar_chart_benchmark` |
@@ -47,25 +46,20 @@ Managed with [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync                 # install dependencies
-uv run reflex run       # start the demo app / gallery (all 43 charts)
-uv run pytest           # wrapper tests (TDD)
+uv run reflex run       # start the demo app / gallery
 ```
-
-The **demo gallery** lives in `reflex_rosencharts/reflex_rosencharts.py`: a sidebar per family
-and one card per chart (chart rendered with sample data + Python snippet). It is the visual test
-bench for the port.
 
 ## Specifications (SDD)
 
 The project follows **Spec-Driven Design**. The specs are the primary artifact:
 
-- [PRD](specs/prd/reflex-rosencharts-prd.md) — the what and the who
+- [PRD](specs/prd/reflex-rosencharts-prd.md) — the what and the who-for
 - [API Spec](specs/api/component-api-v1.md) — public Python API (functions, props)
 - [Technical Design](specs/technical/architecture.md) — wrapping pattern and architecture
-- [Data Model](specs/data-model/chart-data-schemas.md) — data schemas per chart
-- [Implementation Plan](specs/plans/implementation-plan.md) — phases per family
+- [Data Model](specs/data-model/chart-data-schemas.md) — per-chart data schemas
+- [Implementation Plan](specs/plans/implementation-plan.md) — phases by family
 
-The original code (reference, read-only) is in [`reference/rosencharts/`](reference/rosencharts/).
+The original code (reference, read-only) lives in [`reference/rosencharts/`](reference/rosencharts/).
 
 ## License and attribution
 

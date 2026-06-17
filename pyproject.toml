@@ -1,7 +1,7 @@
 [project]
 name = "reflex-rosencharts"
-version = "0.1.0"
-description = "rosencharts charts (D3 + Tailwind) ported to Reflex as Python components — 43 charts, no JS required."
+version = "0.1.2"
+description = "A Reflex custom component port of the rosencharts charting library (D3.js + Tailwind), usable from pure Python."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE", "NOTICE"]
@@ -25,33 +25,12 @@ dependencies = [
     "reflex>=0.9.5.post2",
 ]
 
-[project.urls]
-Homepage = "https://github.com/ecrespo/reflex-rosencharts"
-Source = "https://github.com/ecrespo/reflex-rosencharts"
-Issues = "https://github.com/ecrespo/reflex-rosencharts/issues"
-
-[dependency-groups]
-dev = [
-    "playwright>=1.60.0",
-    "pytest>=9.1.0",
-    "pytest-cov>=7.1.0",
-    "twine>=5.0.0",
-]
-
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
-[tool.hatch.build.targets.wheel]
-# Ship the Python wrappers AND the parametrized .tsx assets they wrap.
-packages = ["reflex_rosencharts"]
-artifacts = ["*.tsx"]
+[tool.setuptools.packages.find]
+include = ["reflex_rosencharts*"]
 
-[tool.hatch.build.targets.sdist]
-include = [
-    "reflex_rosencharts",
-    "README.md",
-    "LICENSE",
-    "NOTICE",
-    "CONTRIBUTING.md",
-]
+[tool.setuptools.package-data]
+"reflex_rosencharts" = ["**/*.tsx", "**/*.ts", "**/*.js", "**/*.jsx", "**/*.css"]
