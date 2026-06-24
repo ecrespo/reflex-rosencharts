@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reflex-rosencharts"
-version = "0.1.2"
+version = "0.2.0"
 description = "A Reflex custom component port of the rosencharts charting library (D3.js + Tailwind), usable from pure Python."
 readme = "README.md"
 license = { text = "MIT" }
