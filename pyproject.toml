@@ -13,6 +13,7 @@ authors = [{ name = "Ernesto Crespo", email = "ecrespo@gmail.com" }]
 keywords = ["reflex", "reflex-custom-components", "charts", "dataviz", "d3", "tailwind", "rosencharts"]
 dependencies = [
     "reflex>=0.9.5.post2",
+    "reflex-hosting-cli>=0.1.66",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
