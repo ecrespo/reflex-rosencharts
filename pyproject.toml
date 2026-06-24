@@ -1,36 +1,44 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "reflex-rosencharts"
-version = "0.1.2"
+version = "0.2.1"
 description = "A Reflex custom component port of the rosencharts charting library (D3.js + Tailwind), usable from pure Python."
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE", "NOTICE"]
-requires-python = ">=3.10"
+license = { text = "MIT" }
+requires-python = ">=3.13"
 authors = [{ name = "Ernesto Crespo", email = "ecrespo@gmail.com" }]
-keywords = ["reflex", "charts", "d3", "tailwind", "dataviz", "visualization", "rosencharts", "components"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Scientific/Engineering :: Visualization",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",
-]
+keywords = ["reflex", "reflex-custom-components", "charts", "dataviz", "d3", "tailwind", "rosencharts"]
 dependencies = [
     "reflex>=0.9.5.post2",
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
 
-[build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+[project.urls]
+Homepage = "https://github.com/ecrespo/reflex-rosencharts"
+Repository = "https://github.com/ecrespo/reflex-rosencharts"
+Issues = "https://github.com/ecrespo/reflex-rosencharts/issues"
+
+[project.optional-dependencies]
+# Publishing toolchain (Reflex custom-component template convention).
+dev = ["build", "twine"]
+
+[dependency-groups]
+# Local dev/test tooling (not published to PyPI; PEP 735).
+test = ["pytest>=8", "pytest-cov", "playwright"]
 
 [tool.setuptools.packages.find]
-include = ["reflex_rosencharts*"]
+where = ["custom_components"]
 
 [tool.setuptools.package-data]
 "reflex_rosencharts" = ["**/*.tsx", "**/*.ts", "**/*.js", "**/*.jsx", "**/*.css"]

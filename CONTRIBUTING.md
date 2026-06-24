@@ -6,45 +6,37 @@ A repeatable pattern for porting each chart. Details in
 ## Steps per chart
 
 1. **Copy** `reference/rosencharts/<family>/<n>_<Name>.tsx`
-   → `reflex_rosencharts/components/<family>/<name>.tsx`.
+   → `custom_components/reflex_rosencharts/components/<family>/<name>.tsx`.
 2. **Parametrize the data**: replace the hardcoded `data` with a prop whose default matches the
    original example:
    ```tsx
-   const defaultData = [ ...ejemplo original... ];
-   export function ChartName({ data = defaultData, color = "..." }: {...}) {
-     if (data.length === 0) return <div className="relative h-72 w-full" />;
-     // ... mapear/escalas a partir de `data`
-   }
+   export function LineChart({ data = DEFAULT_DATA, color = "stroke-fuchsia-400" }) { ... }
    ```
 3. **Adjust the helper imports** to the local path (`./helpers/ClientTooltip` or relative).
 4. **Python wrapper** (`<name>.py`):
    ```python
-   from typing import TypedDict
    import reflex as rx
-   from ..helpers.client_tooltip import client_tooltip_asset  # sólo si usa tooltip
+   from typing import TypedDict
 
    class LinePoint(TypedDict):
        date: str
        value: float
 
-   _DEFAULT_DATA: list[LinePoint] = [ ...ejemplo... ]
-
-   client_tooltip_asset()                       # sólo si usa tooltip (lo hace viajar)
-   _PATH = rx.asset("line_chart.tsx", shared=True)
+   _path = rx.asset("./line_chart.tsx", shared=True)
 
    class LineChart(rx.Component):          # NoSSRComponent if it uses portal/tooltip
        library = f"$/public{_path}"
        tag = "LineChart"
        is_default = False
-       lib_dependencies: list[str] = ["d3"]      # si el TSX importa de "d3"
-       data: rx.Var[list[LinePoint]] = rx.Var.create(_DEFAULT_DATA)
+       data: rx.Var[list[LinePoint]] = rx.Var.create([])
        color: rx.Var[str] = rx.Var.create("stroke-fuchsia-400")
+       on_point_hover: rx.EventHandler[rx.event.passthrough_event_spec(dict)]
 
    def line_chart(**props) -> rx.Component:
        return LineChart.create(**props)
    ```
-5. **Re-export** in `components/<family>/__init__.py` and in `reflex_rosencharts/__init__.py`.
-6. **Example** in the gallery (`reflex_rosencharts/reflex_rosencharts.py`).
+5. **Re-export** in `components/<family>/__init__.py` and in `custom_components/reflex_rosencharts/__init__.py`.
+6. **Example** in the gallery / demo app (`reflex_rosencharts_demo/reflex_rosencharts_demo.py`).
 7. **Tests**: import + render; **visual comparison** via screenshot against `reference/`.
 
 ## Rules
