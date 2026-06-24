@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max, line as d3_line, min, curveMonotoneX } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Item = { key: string; metric1: number; metric2: number };
 
@@ -143,7 +143,7 @@ export function BarChartLine({ data = DEFAULT_DATA }: { data?: Item[] }) {
             return (
               <React.Fragment key={index}>
                 <ClientTooltip>
-                  <TooltipTrigger>
+                  <TooltipTriggerDiv>
                     {/* Full height invisible bar */}
                     <div
                       style={{
@@ -154,7 +154,7 @@ export function BarChartLine({ data = DEFAULT_DATA }: { data?: Item[] }) {
                       }}
                       className="absolute bottom-0 z-10"
                     />
-                  </TooltipTrigger>
+                  </TooltipTriggerDiv>
                   <TooltipContent>
                     <div className="text-sm text-gray-400">{d.key}</div>
                     <div className="flex gap-4">

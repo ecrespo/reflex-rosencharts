@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Item = { key: string; values: number[] };
 
@@ -116,7 +116,7 @@ export function BarChartMultiVertical({ data = DEFAULT_DATA }: { data?: Item[] }
           {/* Bars */}
           {data.map((d, index) => (
             <ClientTooltip key={index}>
-              <TooltipTrigger>
+              <TooltipTriggerDiv>
                 <div
                   className="absolute top-0"
                   style={{
@@ -145,7 +145,7 @@ export function BarChartMultiVertical({ data = DEFAULT_DATA }: { data?: Item[] }
                     );
                   })}
                 </div>
-              </TooltipTrigger>
+              </TooltipTriggerDiv>
               <TooltipContent>
                 <div className="text-sm text-gray-400 border-b border-gray-200 dark:border-gray-800 pb-1 mb-1.5">
                   {d.key}

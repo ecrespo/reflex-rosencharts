@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Item = { key: string; value: number; color: string };
 
@@ -61,7 +61,7 @@ export function BarChartGradient({ data: rawData = DEFAULT_DATA }: { data?: Item
 
           return (
             <ClientTooltip key={index}>
-              <TooltipTrigger>
+              <TooltipTriggerDiv>
                 <div
                   style={{
                     position: "absolute",
@@ -73,7 +73,7 @@ export function BarChartGradient({ data: rawData = DEFAULT_DATA }: { data?: Item
                   }}
                   className={`bg-gradient-to-b ${d.color}`}
                 />
-              </TooltipTrigger>
+              </TooltipTriggerDiv>
               <TooltipContent>
                 <div>{d.key}</div>
                 <div className="text-gray-500 text-sm">{d.value}</div>

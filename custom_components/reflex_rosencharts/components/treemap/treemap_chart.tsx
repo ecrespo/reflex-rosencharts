@@ -1,6 +1,6 @@
 import React from "react";
 import * as d3 from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 // Default dataset = the original rosencharts example, preserved as the nested
 // hierarchy ({ name: "root", children: [...] }) that feeds d3.hierarchy.
@@ -74,7 +74,7 @@ export function TreemapChart({ data = DEFAULT_DATA }: { data?: any }) {
         const VISIBLE_TEXT_HEIGHT = 15;
         return (
           <ClientTooltip key={i}>
-            <TooltipTrigger>
+            <TooltipTriggerDiv>
               <div
                 key={i}
                 className={color(leaf.parent.data.name) as string}
@@ -99,7 +99,7 @@ export function TreemapChart({ data = DEFAULT_DATA }: { data?: any }) {
                   <div className="text-gray-100 text-sm leading-5">{leaf.value}</div>
                 )}
               </div>
-            </TooltipTrigger>
+            </TooltipTriggerDiv>
             <TooltipContent>
               <div>{leaf.data.name}</div>
               <div className="text-gray-500 text-sm">{leaf.value}</div>

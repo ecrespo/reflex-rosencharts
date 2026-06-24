@@ -8,7 +8,7 @@ All 43 charts across 8 families (area, bar, line, pie, scatter, radar, treemap,
 other) are re-exported here. See specs/api/component-api-v1.md for the catalog.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 # Shared base wrapper (concrete charts subclass this).
 from .reflex_rosencharts import RosenChart, rosen_chart  # noqa: F401

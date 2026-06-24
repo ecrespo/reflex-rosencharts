@@ -101,6 +101,76 @@ const TooltipTrigger = React.forwardRef<SVGGElement, { children: React.ReactNode
 TooltipTrigger.displayName = TRIGGER_NAME;
 
 /* -------------------------------------------------------------------------------------------------
+ * TooltipTriggerDiv
+ *
+ * Same behaviour as TooltipTrigger but renders an HTML <div> instead of an SVG <g>.
+ * Use this for DIV-based charts (bars, treemap cells, logo points) where wrapping
+ * the trigger in an SVG <g> outside of an <svg> makes React warn "unrecognized tag
+ * <g>". `display: contents` keeps it layout-neutral; pointer events still bubble
+ * from the absolutely-positioned children.
+ * -----------------------------------------------------------------------------------------------*/
+
+const TRIGGER_DIV_NAME = "TooltipTriggerDiv";
+
+const TooltipTriggerDiv = React.forwardRef<HTMLDivElement, { children: React.ReactNode }>(
+  (props, forwardedRef) => {
+    const { children } = props;
+    const context = useTooltipContext(TRIGGER_DIV_NAME);
+    const triggerRef = React.useRef<HTMLDivElement | null>(null);
+
+    React.useEffect(() => {
+      const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+        if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+          context.setTooltip(undefined);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("touchstart", handleClickOutside);
+      };
+    }, [context]);
+
+    return (
+      <div
+        style={{ display: "contents" }}
+        ref={(node) => {
+          triggerRef.current = node;
+          if (typeof forwardedRef === "function") {
+            forwardedRef(node);
+          } else if (forwardedRef) {
+            forwardedRef.current = node;
+          }
+        }}
+        onPointerMove={(event) => {
+          if (event.pointerType === "mouse") {
+            context.setTooltip({ x: event.clientX, y: event.clientY });
+          }
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType === "mouse") {
+            context.setTooltip(undefined);
+          }
+        }}
+        onTouchStart={(event) => {
+          context.setTooltip({ x: event.touches[0].clientX, y: event.touches[0].clientY });
+          setTimeout(() => {
+            context.setTooltip(undefined);
+          }, 2000);
+        }}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+TooltipTriggerDiv.displayName = TRIGGER_DIV_NAME;
+
+/* -------------------------------------------------------------------------------------------------
  * TooltipContent
  * -----------------------------------------------------------------------------------------------*/
 
@@ -164,4 +234,4 @@ TooltipContent.displayName = CONTENT_NAME;
  * Exports
  * -----------------------------------------------------------------------------------------------*/
 
-export { Tooltip as ClientTooltip, TooltipTrigger, TooltipContent };
+export { Tooltip as ClientTooltip, TooltipTrigger, TooltipTriggerDiv, TooltipContent };

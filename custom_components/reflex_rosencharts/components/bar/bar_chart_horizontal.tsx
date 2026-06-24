@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Point = { key: string; value: number };
 
@@ -61,7 +61,7 @@ export function BarChartHorizontal({ data: rawData = DEFAULT_DATA }: { data?: Po
 
           return (
             <ClientTooltip key={index}>
-              <TooltipTrigger>
+              <TooltipTriggerDiv>
                 <div
                   key={index}
                   style={{
@@ -73,7 +73,7 @@ export function BarChartHorizontal({ data: rawData = DEFAULT_DATA }: { data?: Po
                   }}
                   className={`absolute bg-purple-300 dark:bg-purple-400`}
                 />
-              </TooltipTrigger>
+              </TooltipTriggerDiv>
               <TooltipContent>
                 <div className="flex gap-2.5 items-center">
                   <div className="w-1 h-8 bg-purple-300 dark:bg-purple-400 rounded-full"></div>

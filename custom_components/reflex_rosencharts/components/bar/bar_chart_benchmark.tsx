@@ -1,5 +1,5 @@
 import React from "react";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Item = { key: string; value: number };
 
@@ -22,7 +22,7 @@ export function BarChartBenchmark({ data = DEFAULT_DATA }: { data?: Item[] }) {
       {data.map((d, index) => {
         return (
           <ClientTooltip key={index}>
-            <TooltipTrigger>
+            <TooltipTriggerDiv>
               <>
                 <div
                   className={`text-sm whitespace-nowrap ${
@@ -60,7 +60,7 @@ export function BarChartBenchmark({ data = DEFAULT_DATA }: { data?: Item[] }) {
                   </div>
                 </div>
               </>
-            </TooltipTrigger>
+            </TooltipTriggerDiv>
             <TooltipContent>
               <div>{d.key}</div>
               <div className="text-gray-500 dark:text-zinc-400 text-sm">{d.value}</div>

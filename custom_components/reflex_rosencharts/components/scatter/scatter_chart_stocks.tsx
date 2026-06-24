@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
 import { scaleLinear, max, min } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type ScatterPoint = { revenue: number; value: number; company?: string };
 
@@ -160,7 +160,7 @@ export function ScatterChartStocks({ data = DEFAULT_DATA }: { data?: ScatterPoin
       >
         {data.map((d, index) => (
           <ClientTooltip key={index}>
-            <TooltipTrigger>
+            <TooltipTriggerDiv>
               <div
                 key={index}
                 style={{
@@ -174,7 +174,7 @@ export function ScatterChartStocks({ data = DEFAULT_DATA }: { data?: ScatterPoin
                   {companyLogos[index % companyLogos.length]}
                 </svg>
               </div>
-            </TooltipTrigger>
+            </TooltipTriggerDiv>
             <TooltipContent>
               <div>{d.company}</div>
               <div className="text-gray-500 text-sm">

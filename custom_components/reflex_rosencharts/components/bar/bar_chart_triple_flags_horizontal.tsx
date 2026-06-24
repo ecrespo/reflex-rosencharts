@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Item = { key: string; values: number[]; flag: string };
 
@@ -105,7 +105,7 @@ export function BarChartTripleFlagsHorizontal({ data = DEFAULT_DATA }: { data?: 
           {data.map((d, index) => {
             return (
               <ClientTooltip key={index}>
-                <TooltipTrigger>
+                <TooltipTriggerDiv>
                   <div
                     className="absolute"
                     style={{
@@ -131,7 +131,7 @@ export function BarChartTripleFlagsHorizontal({ data = DEFAULT_DATA }: { data?: 
                       );
                     })}
                   </div>
-                </TooltipTrigger>
+                </TooltipTriggerDiv>
                 <TooltipContent>
                   <div className="text-sm text-gray-400">{d.key}</div>
                   <div className="flex gap-4">

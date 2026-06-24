@@ -1,6 +1,6 @@
 import React from "react";
 import * as d3 from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 interface ExtendedHierarchyNode<T> extends d3.HierarchyNode<T> {
   x0: number;
@@ -96,7 +96,7 @@ export function TreemapChartGradient({ data = DEFAULT_DATA }: { data?: any }) {
 
         return (
           <ClientTooltip key={i}>
-            <TooltipTrigger>
+            <TooltipTriggerDiv>
               <div
                 key={i}
                 className={color(leaf.parent!.data.name) as string}
@@ -119,7 +119,7 @@ export function TreemapChartGradient({ data = DEFAULT_DATA }: { data?: any }) {
                   <div className="text-lg leading-5">{leaf.value}</div>
                 )}
               </div>
-            </TooltipTrigger>
+            </TooltipTriggerDiv>
             <TooltipContent>
               <div>{leaf.data.name}</div>
               <div className="text-gray-500 text-sm">{leaf.value}</div>

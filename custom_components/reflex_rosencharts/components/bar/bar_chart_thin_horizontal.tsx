@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
-import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
+import { ClientTooltip, TooltipContent, TooltipTriggerDiv } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Item = { key: string; value: number };
 
@@ -79,7 +79,7 @@ export function BarChartThinHorizontal({ data: rawData = DEFAULT_DATA }: { data?
               : "hover:bg-sky-200/40";
           return (
             <ClientTooltip key={index}>
-              <TooltipTrigger>
+              <TooltipTriggerDiv>
                 <div
                   style={{
                     position: "absolute",
@@ -91,7 +91,7 @@ export function BarChartThinHorizontal({ data: rawData = DEFAULT_DATA }: { data?
                   }}
                   className={`${hoverColor} hover:bg-gray-200/50 relative z-10`}
                 />
-              </TooltipTrigger>
+              </TooltipTriggerDiv>
               <TooltipContent>
                 <div>{d.key}</div>
                 <div className="text-gray-500 text-sm">{d.value}</div>
