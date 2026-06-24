@@ -40,14 +40,55 @@ def index() -> rx.Component:
 
 Full catalog and props: [`specs/api/component-api-v1.md`](specs/api/component-api-v1.md).
 
+## Installation
+
+```bash
+pip install reflex-rosencharts
+# or, with uv:
+uv add reflex-rosencharts
+```
+
+## Project layout
+
+This repo is a [Reflex custom component](https://reflex.dev/docs/custom-components/overview/):
+
+```
+custom_components/
+└── reflex_rosencharts/          # the published package (import name: reflex_rosencharts)
+    ├── __init__.py              # public API surface
+    ├── reflex_rosencharts.py    # shared base wrapper (RosenChart)
+    └── components/<family>/     # chart wrappers, ported in phases
+reflex_rosencharts_demo/         # demo app (reflex run) showcasing the component
+pyproject.toml                   # packaging metadata (where = ["custom_components"])
+```
+
 ## Development
 
 Managed with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv sync                 # install dependencies
-uv run reflex run       # start the demo app / gallery
+uv sync --extra dev --group test   # install runtime + publishing + test tooling
+uv run reflex run                  # start the demo app / gallery
 ```
+
+### Build & publish (custom component)
+
+```bash
+# 1. Build the sdist + wheel into dist/ (PYTHONPATH=. lets the .pyi step resolve
+#    the package under custom_components/).
+PYTHONPATH=. uv run reflex component build
+
+# 2. Sanity-check the artifacts.
+uv run twine check dist/*
+
+# 3. Publish to PyPI with uv (needs a PyPI API token):
+uv publish --token "$PYPI_TOKEN"
+# …or to TestPyPI first:
+uv publish --publish-url https://test.pypi.org/legacy/ --token "$TEST_PYPI_TOKEN"
+```
+
+See Reflex's [command reference](https://reflex.dev/docs/custom-components/command-reference/)
+and [publishing prerequisites](https://reflex.dev/docs/custom-components/prerequisites-for-publishing/).
 
 ## Specifications (SDD)
 
