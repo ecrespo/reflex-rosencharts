@@ -22,10 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      # ruff comes from uv.lock (dev extra), so CI and local runs use the same version.
+      - name: Install
+        run: uv sync --frozen --extra dev
       - name: ruff check
-        run: uvx ruff check . --exclude reference
+        run: uv run ruff check .
       - name: ruff format --check
-        run: uvx ruff format --check custom_components reflex_rosencharts_demo tests rxconfig.py
+        run: uv run ruff format --check custom_components reflex_rosencharts_demo tests rxconfig.py
 
   test:
     name: Tests (pytest)
