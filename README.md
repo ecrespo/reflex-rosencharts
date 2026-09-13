@@ -40,6 +40,28 @@ def index() -> rx.Component:
 
 Full catalog and props: [`specs/api/component-api-v1.md`](specs/api/component-api-v1.md).
 
+## Axis options (scatter and line charts)
+
+The scatter charts build both axes from the *extent* of the data, label them with
+regular ticks that line up with the grid lines, and reserve room for the dots so
+none is clipped at the edges — the data does not have to arrive sorted:
+
+```python
+rxc.scatter_chart(
+    data=State.repos,      # [{"revenue": x, "value": y, "company": label}, ...]
+    x_scale="log",         # "linear" (default), "log" or "symlog"
+    margin_left="46px",    # optional; by default it fits the longest y label
+)
+```
+
+| Prop | Charts | Default |
+|---|---|---|
+| `margin_left` | the 4 scatter charts, `line_chart`, `line_chart_curved`, `line_chart_multiple`, `line_chart_pulse`, `line_chart_step`, `line_chart_stocks_curved` | computed from the longest y label |
+| `x_scale` / `y_scale` | the 4 scatter charts | `"linear"` |
+
+`"log"` needs strictly positive values and falls back to `"symlog"` when any
+value is `<= 0`. See [`CHANGELOG.md`](CHANGELOG.md) for what changed in 0.2.2.
+
 ## Installation
 
 ```bash
@@ -69,6 +91,15 @@ Managed with [uv](https://docs.astral.sh/uv/):
 ```bash
 uv sync --extra dev --group test   # install runtime + publishing + test tooling
 uv run reflex run                  # start the demo app / gallery
+```
+
+Axis regression check for the scatter and line charts (server-renders them with
+clustered, unsorted and extreme-valued data and asserts the tick, margin and
+clipping guarantees). It uses the frontend dependencies Reflex installs on the
+first `reflex run`:
+
+```bash
+node scripts/check_scatter_axes.mjs
 ```
 
 ### Build & publish (custom component)

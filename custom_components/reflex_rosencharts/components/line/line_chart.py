@@ -3,10 +3,14 @@
 Data schema: ``list[{"date": str (YYYY-MM-DD), "value": float}]``. Empty data
 renders an empty container (never raises). With no ``data`` the original
 rosencharts example dataset is shown.
+
+Since 0.2.2 the y-axis gutter is sized from the longest label instead of a fixed
+25px, so 3+ digit values no longer wrap; override it with ``margin_left``.
 """
 
 import reflex as rx
 
+from ..helpers import chart_axis as _chart_axis  # noqa: F401
 from ..helpers import client_tooltip as _client_tooltip  # noqa: F401
 
 _path = rx.asset("./line_chart.tsx", shared=True)
@@ -23,6 +27,10 @@ class LineChart(rx.NoSSRComponent):
 
     # data: list[{"date": str, "value": float}]
     data: rx.Var[list[dict]]
+
+    # Width of the y-axis gutter ("46px" or 46). Defaults to a value computed
+    # from the longest y label, so 3+ digit values never wrap onto two lines.
+    margin_left: rx.Var[str | int]
 
 
 def line_chart(**props) -> rx.Component:
