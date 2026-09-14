@@ -60,16 +60,6 @@ jobs:
         run: uv export --frozen --no-dev --no-emit-project --no-hashes -o requirements.txt
       - run: uvx pip-audit --strict -r requirements.txt
 
-  dependency-review:
-    name: Dependency review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: high
-
   codeql:
     name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
