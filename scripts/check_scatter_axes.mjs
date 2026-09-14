@@ -169,11 +169,15 @@ const widths = [...repos.matchAll(/width="([-\d.e]+)" height="100"/g)].map((m) =
 check("no tooltip band with a negative width", widths.length > 0 && widths.every((w) => w >= 0));
 check("every point carries its own dot trigger", (repos.match(/stroke-width="18"/g) || []).length === REPOS.length);
 
-check("gutter fits 3-digit labels", gutter(repos) === "31px", gutter(repos));
-check("gutter grows for 4-digit labels", gutter(rendered.scatter_outlier) === "38px", gutter(rendered.scatter_outlier));
+check("gutter fits 3-digit labels", gutter(repos) === "36px", gutter(repos));
+check("gutter grows for 4-digit labels", gutter(rendered.scatter_outlier) === "44px", gutter(rendered.scatter_outlier));
 check("margin_left overrides it (scatter)", gutter(rendered.scatter_margin) === "60px");
 check("margin_left overrides it (line)", gutter(rendered.line_margin) === "70px");
-check("line gutter fits a 4-digit label", gutter(rendered.line_big) === "38px", gutter(rendered.line_big));
+check("line gutter fits a 4-digit label", gutter(rendered.line_big) === "44px", gutter(rendered.line_big));
+for (const [name, html] of Object.entries(rendered)) {
+  const classes = [...html.matchAll(/class="(absolute text-xs tabular-nums[^"]*)"/g)].map((m) => m[1]);
+  if (classes.length) check(`${name}: y labels never wrap`, classes.every((c) => c.includes("whitespace-nowrap")));
+}
 check("empty data renders an empty container", rendered.scatter_empty === '<div class="relative h-72 w-full"></div>');
 const numbers = (labels) => labels.map((l) => Number(l.replace(/,/g, "")));
 check("narrow log y axis keeps several labels", yLabels(rendered.scatter_log_narrow).length >= 3, yLabels(rendered.scatter_log_narrow).join(" | "));
