@@ -1,5 +1,9 @@
 import { CSSProperties } from "react";
 import { scaleTime, scaleLinear, max, line as d3_line, curveMonotoneX } from "d3";
+import {
+  axisMarginLeft,
+  cssLength,
+} from "$/public/external/reflex_rosencharts/components/helpers/chart_axis/ChartAxis.tsx";
 
 type Point = { date: string; value: number };
 
@@ -18,7 +22,13 @@ const DEFAULT_DATA: Point[] = [
   { date: "2023-05-10", value: 9 },
 ];
 
-export function LineChartStocksCurved({ data: rawData = DEFAULT_DATA }: { data?: Point[] }) {
+export function LineChartStocksCurved({
+  data: rawData = DEFAULT_DATA,
+  marginLeft: marginLeftProp,
+}: {
+  data?: Point[];
+  marginLeft?: number | string;
+}) {
   if (!rawData || rawData.length === 0) {
     return <div className="relative h-72 w-full" />;
   }
@@ -30,6 +40,9 @@ export function LineChartStocksCurved({ data: rawData = DEFAULT_DATA }: { data?:
   let yScale = scaleLinear()
     .domain([0, max(data.map((d) => d.value)) ?? 0])
     .range([100, 0]);
+
+  // The labels drive the left gutter, so 3+ digit values never wrap.
+  const yLabels = yScale.ticks(8).map(yScale.tickFormat(8, "d"));
 
   let line = d3_line<(typeof data)[number]>()
     .x((d) => xScale(d.date))
@@ -50,7 +63,7 @@ export function LineChartStocksCurved({ data: rawData = DEFAULT_DATA }: { data?:
           "--marginTop": "0px",
           "--marginRight": "8px",
           "--marginBottom": "25px",
-          "--marginLeft": "25px",
+          "--marginLeft": cssLength(marginLeftProp, axisMarginLeft(yLabels)),
         } as CSSProperties
       }
     >
@@ -63,9 +76,7 @@ export function LineChartStocksCurved({ data: rawData = DEFAULT_DATA }: { data?:
           overflow-visible
         "
       >
-        {yScale
-          .ticks(8)
-          .map(yScale.tickFormat(8, "d"))
+        {yLabels
           .map((value, i) => (
             <div
               key={i}
@@ -96,9 +107,7 @@ export function LineChartStocksCurved({ data: rawData = DEFAULT_DATA }: { data?:
           preserveAspectRatio="none"
         >
           {/* Grid lines */}
-          {yScale
-            .ticks(8)
-            .map(yScale.tickFormat(8, "d"))
+          {yLabels
             .map((active, i) => (
               <g
                 transform={`translate(0,${yScale(+active)})`}

@@ -1,5 +1,16 @@
 import { CSSProperties } from "react";
-import { scaleLinear, max, min } from "d3";
+import {
+  axisMarginLeft,
+  buildAxis,
+  cssLength,
+  insetRange,
+  labelShift,
+  pxValue,
+  responsiveTickCount,
+  tooltipBands,
+  useElementWidth,
+  type ScaleKind,
+} from "$/public/external/reflex_rosencharts/components/helpers/chart_axis/ChartAxis.tsx";
 import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type ScatterPoint = { revenue: number; value: number; company?: string };
@@ -28,27 +39,59 @@ const DEFAULT_DATA: ScatterPoint[] = [
   { revenue: 200, value: 93.5, company: "Company T" },
 ];
 
-export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] }) {
-  if (!data || data.length === 0) {
-    return <div className="relative h-72 w-full" />;
-  }
+const MARGIN_TOP = 0;
+const MARGIN_RIGHT = 0;
+const MARGIN_BOTTOM = 25;
+const PLOT_HEIGHT = 288 - MARGIN_TOP - MARGIN_BOTTOM; // h-72 minus the x-axis strip
+const MARK_RADIUS = 10; // half of the 20px hover stroke, so no dot is ever cut
+const Y_TICK_COUNT = 5;
 
-  let xScale = scaleLinear()
-    .domain([data[0].revenue, data[data.length - 1].revenue])
-    .range([0, 100]);
-  let yScale = scaleLinear()
-    .domain([(min(data.map((d) => d.value)) ?? 0) - 1, (max(data.map((d) => d.value)) ?? 0) + 1])
-    .range([100, 0]);
+export function ScatterChart({
+  data = DEFAULT_DATA,
+  xScale: xKind = "linear",
+  yScale: yKind = "linear",
+  marginLeft: marginLeftProp,
+}: {
+  data?: ScatterPoint[];
+  xScale?: ScaleKind;
+  yScale?: ScaleKind;
+  marginLeft?: number | string;
+}) {
+  // Width drives how many x labels fit; measured, so it also works on mobile.
+  const [containerRef, containerWidth] = useElementWidth<HTMLDivElement>();
+  const points = Array.isArray(data) ? data : [];
+
+  const y = buildAxis(points.map((d) => d.value), insetRange(PLOT_HEIGHT, MARK_RADIUS, true), {
+    kind: yKind,
+    tickCount: Y_TICK_COUNT,
+    lengthPx: PLOT_HEIGHT,
+  });
+  // Left gutter follows the longest y label, so "1000" never wraps onto two lines.
+  const marginLeft = cssLength(marginLeftProp, axisMarginLeft(y.ticks.map((tick) => tick.label)));
+  const plotWidth = Math.max(0, containerWidth - pxValue(marginLeft, 25) - MARGIN_RIGHT);
+  const xTickCount = responsiveTickCount(plotWidth);
+  const x = buildAxis(points.map((d) => d.revenue), insetRange(plotWidth, MARK_RADIUS), {
+    kind: xKind,
+    tickCount: xTickCount,
+    lengthPx: plotWidth,
+  });
+  // Tooltip bands come from a sorted copy: the input order never matters.
+  const bands = tooltipBands(points.map((d) => d.revenue), x.scale, points.map((d) => d.value));
+
+  if (points.length === 0) {
+    return <div ref={containerRef} className="relative h-72 w-full" />;
+  }
 
   return (
     <div
+      ref={containerRef}
       className="relative h-72 w-full"
       style={
         {
-          "--marginTop": "0px",
-          "--marginRight": "0px",
-          "--marginBottom": "25px",
-          "--marginLeft": "25px",
+          "--marginTop": `${MARGIN_TOP}px`,
+          "--marginRight": `${MARGIN_RIGHT}px`,
+          "--marginBottom": `${MARGIN_BOTTOM}px`,
+          "--marginLeft": marginLeft,
         } as CSSProperties
       }
     >
@@ -61,21 +104,18 @@ export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] })
           overflow-visible
         "
       >
-        {yScale
-          .ticks(3)
-          .map(yScale.tickFormat(3, "d"))
-          .map((value, i) => (
-            <div
-              key={i}
-              style={{
-                top: `${yScale(+value)}%`,
-                left: "0%",
-              }}
-              className="absolute text-xs tabular-nums -translate-y-1/2 text-gray-500 w-full text-right pr-2"
-            >
-              {value}
-            </div>
-          ))}
+        {y.ticks.map((tick, i) => (
+          <div
+            key={i}
+            style={{
+              top: `${tick.position}%`,
+              left: "0%",
+            }}
+            className="absolute text-xs tabular-nums -translate-y-1/2 text-gray-500 w-full text-right pr-2"
+          >
+            {tick.label}
+          </div>
+        ))}
       </div>
 
       {/* Chart area */}
@@ -93,31 +133,28 @@ export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] })
           className="w-full h-full overflow-visible"
           preserveAspectRatio="none"
         >
-          {/* Horizontal grid lines */}
-          {yScale
-            .ticks(8)
-            .map(yScale.tickFormat(8, "d"))
-            .map((active, i) => (
-              <g
-                transform={`translate(0,${yScale(+active)})`}
-                className="text-zinc-500/20 dark:text-zinc-700/50"
-                key={i}
-              >
-                <line
-                  x1={0}
-                  x2={100}
-                  stroke="currentColor"
-                  strokeDasharray="6,5"
-                  strokeWidth={0.5}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </g>
-            ))}
+          {/* Horizontal grid lines (same ticks as the labels, so they line up) */}
+          {y.ticks.map((tick, i) => (
+            <g
+              transform={`translate(0,${tick.position})`}
+              className="text-zinc-500/20 dark:text-zinc-700/50"
+              key={i}
+            >
+              <line
+                x1={0}
+                x2={100}
+                stroke="currentColor"
+                strokeDasharray="6,5"
+                strokeWidth={0.5}
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+          ))}
 
           {/* Vertical grid lines */}
-          {xScale.ticks(8).map((active, i) => (
+          {x.ticks.map((tick, i) => (
             <g
-              transform={`translate(${xScale(active)},0)`}
+              transform={`translate(${tick.position},0)`}
               className="text-zinc-500/20 dark:text-zinc-700/50"
               key={i}
             >
@@ -133,13 +170,13 @@ export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] })
           ))}
 
           {/* Circles and Tooltips */}
-          {data.map((d, index) => (
+          {points.map((d, index) => (
             <ClientTooltip key={index}>
               <TooltipTrigger>
                 <g className="group/tooltip">
                   <path // Real Circle
                     key={index}
-                    d={`M ${xScale(d.revenue)} ${yScale(d.value)} l 0.0001 0`}
+                    d={`M ${x.scale(d.revenue)} ${y.scale(d.value)} l 0.0001 0`}
                     vectorEffect="non-scaling-stroke"
                     strokeWidth="10"
                     strokeLinecap="round"
@@ -148,9 +185,9 @@ export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] })
                     className="text-violet-400 group-hover/tooltip:stroke-[20px] transition-all duration-300"
                   />
                   <line // Tooltip Line
-                    x1={xScale(d.revenue)}
+                    x1={x.scale(d.revenue)}
                     y1={0}
-                    x2={xScale(d.revenue)}
+                    x2={x.scale(d.revenue)}
                     y2={100}
                     stroke="currentColor"
                     strokeWidth={1}
@@ -160,24 +197,22 @@ export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] })
                   />
                   {/* Invisible area closest to a specific point for the tooltip trigger */}
                   <rect
-                    x={(() => {
-                      const prevX = index > 0 ? xScale(data[index - 1].revenue) : xScale(d.revenue);
-                      return (prevX + xScale(d.revenue)) / 2;
-                    })()}
+                    x={bands[index].x}
                     y={0}
-                    width={(() => {
-                      const prevX = index > 0 ? xScale(data[index - 1].revenue) : xScale(d.revenue);
-                      const nextX =
-                        index < data.length - 1
-                          ? xScale(data[index + 1].revenue)
-                          : xScale(d.revenue);
-                      const leftBound = (prevX + xScale(d.revenue)) / 2;
-                      const rightBound = (xScale(d.revenue) + nextX) / 2;
-                      return rightBound - leftBound;
-                    })()}
+                    width={bands[index].width}
                     height={100}
                     fill="transparent"
                     className="cursor-pointer"
+                  />
+                  {/* …and the dot itself, so clustered points stay reachable */}
+                  <path
+                    d={`M ${x.scale(d.revenue)} ${y.scale(d.value)} l 0.0001 0`}
+                    vectorEffect="non-scaling-stroke"
+                    strokeWidth="18"
+                    strokeLinecap="round"
+                    fill="none"
+                    stroke="currentColor"
+                    className="text-transparent cursor-pointer"
                   />
                 </g>
               </TooltipTrigger>
@@ -192,27 +227,21 @@ export function ScatterChart({ data = DEFAULT_DATA }: { data?: ScatterPoint[] })
         </svg>
         {/* X Axis */}
         <div className="translate-y-1">
-          {data.map((d, i) => {
-            const isFirst = i === 0;
-            const isLast = i === data.length - 1;
-            if (!isFirst && !isLast && i % 5 !== 0) return null;
-            return (
-              <div key={i} className="overflow-visible text-zinc-500">
-                <div
-                  style={{
-                    left: `${xScale(d.revenue)}%`,
-                    top: "100%",
-                    transform: `translateX(${
-                      i === 0 ? "0%" : i === data.length - 1 ? "-100%" : "-50%"
-                    })`, // The first and last labels should be within the chart area
-                  }}
-                  className="text-xs absolute"
-                >
-                  {d.revenue}
-                </div>
+          {x.ticks.map((tick, i) => (
+            <div key={i} className="overflow-visible text-zinc-500">
+              <div
+                style={{
+                  left: `${tick.position}%`,
+                  top: "100%",
+                  // Keep a label sitting exactly on an edge inside the chart area.
+                  transform: `translateX(${labelShift(tick.position)})`,
+                }}
+                className="text-xs tabular-nums absolute"
+              >
+                {tick.label}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>

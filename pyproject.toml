@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reflex-rosencharts"
-version = "0.2.1"
+version = "0.2.2"
 description = "A Reflex custom component port of the rosencharts charting library (D3.js + Tailwind), usable from pure Python."
 readme = "README.md"
 license = { text = "MIT" }
@@ -13,6 +13,7 @@ authors = [{ name = "Ernesto Crespo", email = "ecrespo@gmail.com" }]
 keywords = ["reflex", "reflex-custom-components", "charts", "dataviz", "d3", "tailwind", "rosencharts"]
 dependencies = [
     "reflex>=0.9.5.post2",
+    "reflex-hosting-cli>=0.1.66",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -31,11 +32,20 @@ Issues = "https://github.com/ecrespo/reflex-rosencharts/issues"
 
 [project.optional-dependencies]
 # Publishing toolchain (Reflex custom-component template convention).
-dev = ["build", "twine"]
+# `reflex component build` shells out to `ruff format` for the generated .pyi stubs.
+dev = ["build", "twine", "ruff>=0.15"]
 
 [dependency-groups]
 # Local dev/test tooling (not published to PyPI; PEP 735).
 test = ["pytest>=8", "pytest-cov", "playwright"]
+
+[tool.ruff]
+extend-exclude = ["reference"]
+
+[tool.ruff.lint]
+# Pinned explicitly so newer ruff releases with a wider default set don't
+# change what CI enforces.
+select = ["E4", "E7", "E9", "F"]
 
 [tool.setuptools.packages.find]
 where = ["custom_components"]

@@ -1,5 +1,9 @@
 import { CSSProperties } from "react";
 import { scaleTime, scaleLinear, max, line as d3_line, curveMonotoneX } from "d3";
+import {
+  axisMarginLeft,
+  cssLength,
+} from "$/public/external/reflex_rosencharts/components/helpers/chart_axis/ChartAxis.tsx";
 import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Point = { date: string; value: number };
@@ -33,9 +37,11 @@ const DEFAULT_DATA2: Point[] = [
 export function LineChartMultiple({
   data: rawData = DEFAULT_DATA,
   data2: rawData2 = DEFAULT_DATA2,
+  marginLeft: marginLeftProp,
 }: {
   data?: Point[];
   data2?: Point[];
+  marginLeft?: number | string;
 }) {
   if (!rawData || rawData.length === 0) {
     return <div className="relative h-72 w-full" />;
@@ -49,6 +55,9 @@ export function LineChartMultiple({
   let yScale = scaleLinear()
     .domain([0, max(data.map((d) => d.value)) ?? 0])
     .range([100, 0]);
+
+  // The labels drive the left gutter, so 3+ digit values never wrap.
+  const yLabels = yScale.ticks(8).map(yScale.tickFormat(8, "d"));
 
   let line = d3_line<(typeof data)[number]>()
     .x((d) => xScale(d.date))
@@ -70,7 +79,7 @@ export function LineChartMultiple({
           "--marginTop": "0px",
           "--marginRight": "8px",
           "--marginBottom": "25px",
-          "--marginLeft": "25px",
+          "--marginLeft": cssLength(marginLeftProp, axisMarginLeft(yLabels)),
         } as CSSProperties
       }
     >
@@ -83,9 +92,7 @@ export function LineChartMultiple({
           overflow-visible
         "
       >
-        {yScale
-          .ticks(8)
-          .map(yScale.tickFormat(8, "d"))
+        {yLabels
           .map((value, i) => (
             <div
               key={i}
@@ -116,9 +123,7 @@ export function LineChartMultiple({
           preserveAspectRatio="none"
         >
           {/* Grid lines */}
-          {yScale
-            .ticks(8)
-            .map(yScale.tickFormat(8, "d"))
+          {yLabels
             .map((active, i) => (
               <g
                 transform={`translate(0,${yScale(+active)})`}
