@@ -5,6 +5,32 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2026-09-13
+
+### Fixed
+
+- **Line and area charts: x-axis labels no longer overlap on narrow screens.**
+  The x axis labels the first point, the last point and the maximum, but it
+  never checked the space between them: when the maximum sat close to an edge
+  its label was drawn on top of its neighbour's (a monthly series at 390px read
+  `6/19/1`). The labels are now picked by a shared `xAxisLabels` helper that
+  measures the plot area, estimates each label's box with the same per-character
+  widths as the y gutter (including its real `0%` / `-50%` / `-100%` shift) and
+  drops, in priority order — first point, last point, maximum — any label that
+  would come within 8px of one already kept or stick out of the plot area. The
+  labels are recomputed when the chart is resized; before the width is known
+  (first render) the previous set is shown. Tied maxima now label only the
+  first of them, and the maximum is computed once instead of once per point.
+  Applies to `line_chart`, `line_chart_curved`, `line_chart_labels_curved`,
+  `line_chart_multiple`, `line_chart_step`, `line_chart_stocks_curved`,
+  `line_chart_pulse` and `area_chart`.
+
+### Added
+
+- **`x_ticks` prop on those eight charts.** `"extremes"` (default, the behaviour
+  above) or `"regular"` for evenly spaced date ticks whose count follows the
+  measured width, like the scatter charts. Optional and backwards compatible.
+
 ## [0.2.3] - 2026-09-13
 
 ### Fixed
@@ -97,6 +123,7 @@ for the axis labels, which are now regular ticks.
 
 - Documentation translated to English; packaging metadata for PyPI.
 
+[0.2.4]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.0...v0.2.1
