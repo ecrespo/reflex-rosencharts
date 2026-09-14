@@ -291,6 +291,61 @@ def scatter_axes_section() -> rx.Component:
     )
 
 
+# Monthly series whose maximum (June) sits two points before the last one: at
+# phone width its label used to land on top of the last one ("6/19/1").
+DEV_STATS = [
+    {"date": f"{year}-{month:02d}-01T00:00:00", "value": value}
+    for year, values in {
+        2024: [0, 0, 8, 0, 22, 8, 23, 12, 17, 19, 5, 8],
+        2025: [3, 10, 1, 0, 0, 9, 7, 21, 10, 41, 66, 34],
+        2026: [9, 94, 130, 59, 66, 193, 85, 61, 81],
+    }.items()
+    for month, value in enumerate(values, start=1)
+]
+
+
+def x_labels_section() -> rx.Component:
+    """The 0.2.4 x-axis fix: labels that do not fit are dropped, never overlapped."""
+    return rx.vstack(
+        rx.heading("X labels that never overlap", size="6", margin_top="1rem"),
+        rx.text(
+            "The line and area charts label the first point, the last point and the maximum. "
+            "When the maximum sits close to an edge its label is dropped instead of being drawn "
+            "on top of another one; resize the window to see the labels recomputed.",
+            size="2",
+            color_scheme="gray",
+        ),
+        rx.grid(
+            chart_card(
+                "Full width",
+                "rxc.line_chart_pulse(data=DEV_STATS)",
+                rxc.line_chart_pulse(data=DEV_STATS),
+            ),
+            chart_card(
+                "Regular ticks",
+                'rxc.line_chart_pulse(data=DEV_STATS, x_ticks="regular")',
+                rxc.line_chart_pulse(data=DEV_STATS, x_ticks="regular"),
+            ),
+            columns=rx.breakpoints(initial="1", md="2"),
+            spacing="4",
+            width="100%",
+        ),
+        rx.box(
+            chart_card(
+                "At 390px",
+                "the same chart at phone width",
+                rxc.line_chart_pulse(data=DEV_STATS),
+            ),
+            id="x-labels-narrow",
+            width="390px",
+            max_width="100%",
+        ),
+        spacing="3",
+        width="100%",
+        align="start",
+    )
+
+
 def index() -> rx.Component:
     return rx.container(
         rx.color_mode.button(position="top-right"),
@@ -337,6 +392,8 @@ def index() -> rx.Component:
             ),
             rx.divider(margin_y="1.5rem"),
             scatter_axes_section(),
+            rx.divider(margin_y="1.5rem"),
+            x_labels_section(),
             rx.divider(margin_y="1.5rem"),
             rx.heading("Full catalog (43 charts)", size="7"),
             rx.text(

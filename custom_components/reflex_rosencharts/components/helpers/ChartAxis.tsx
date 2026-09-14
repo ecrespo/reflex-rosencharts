@@ -18,7 +18,7 @@
  *   - tooltip bands computed on a sorted copy, so the result does not depend on
  *     the order the data arrives in.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { scaleLinear, scaleLog, scaleSymlog, tickStep } from "d3";
 
 /** Scale types a chart can be asked for. */
@@ -208,15 +208,20 @@ export function responsiveTickCount(
   return Math.max(min, Math.min(max, Math.floor(width / perTick)));
 }
 
+/** Share of its own width a label is moved left by: edges stay inside the area. */
+function anchorOffset(position: number): number {
+  if (position <= 0.5) return 0;
+  if (position >= 99.5) return -1;
+  return -0.5;
+}
+
 /** `translateX` that keeps a label sitting exactly on an edge inside the area. */
 export function labelShift(position: number): string {
-  if (position <= 0.5) return "0%";
-  if (position >= 99.5) return "-100%";
-  return "-50%";
+  return `${anchorOffset(position) * 100}%`;
 }
 
 /** Estimated rendered width in px of a `text-xs` label. */
-function labelWidth(label: string): number {
+export function labelWidth(label: string): number {
   let width = 0;
   for (const char of label) width += NARROW_CHARS.has(char) ? NARROW_CHAR_WIDTH : CHAR_WIDTH;
   return width;
@@ -278,13 +283,108 @@ export function tooltipBands(
   });
 }
 
-/** Track an element's width so the tick count can adapt to the viewport. */
+/**
+ * How the time-series charts label their x axis:
+ *   - `"extremes"`: the first point, the last point and the (first) maximum;
+ *   - `"regular"`: evenly spaced calendar ticks, as many as fit the width.
+ */
+export type XTickMode = "extremes" | "regular";
+
+/** The slice of d3's time-scale API the x labels need. */
+export type TimeScale = { (value: Date): number; ticks(count?: number): Date[] };
+
+/** An x label: its text, its position in the scale's range (0-100) and its shift. */
+export type XLabel = { key: string; label: string; position: number; shift: string };
+
+/** Minimum empty space in px kept between two x labels. */
+const X_LABEL_GAP = 8;
+
+/**
+ * Indices of the points to label, most important first: the first point, the
+ * last point, then the maximum. Tied maxima label only the first of them, and
+ * an extreme that already is the maximum is not repeated.
+ */
+function extremeIndices(values: number[]): number[] {
+  if (values.length === 0) return [];
+  const last = values.length - 1;
+  const indices = last > 0 ? [0, last] : [0];
+  let maxIndex = -1;
+  let maxValue = -Infinity;
+  values.forEach((value, index) => {
+    if (value > maxValue) {
+      maxValue = value;
+      maxIndex = index;
+    }
+  });
+  if (maxIndex > 0 && maxIndex < last) indices.push(maxIndex);
+  return indices;
+}
+
+/**
+ * Keep the labels, in priority order, whose estimated box stays inside the
+ * `widthPx` plot area and clear of every label already kept by `X_LABEL_GAP`.
+ * With `keepFirst` the first label survives even when nothing fits.
+ */
+function dropCollidingLabels(labels: XLabel[], widthPx: number, keepFirst: boolean): XLabel[] {
+  const boxes: [number, number][] = [];
+  return labels.filter((label, index) => {
+    const width = labelWidth(label.label);
+    const left = (label.position / 100) * widthPx + anchorOffset(label.position) * width;
+    const right = left + width;
+    const fits =
+      left >= -0.5 &&
+      right <= widthPx + 0.5 &&
+      boxes.every(([l, r]) => right + X_LABEL_GAP <= l || left >= r + X_LABEL_GAP);
+    if (!fits && !(keepFirst && index === 0)) return false;
+    boxes.push([left, right]);
+    return true;
+  });
+}
+
+/**
+ * The x labels of a time-series chart, with the ones that would overlap
+ * already dropped. `widthPx` is the measured width of the plot area; while it
+ * is unknown (first render, SSR) every candidate is returned and the chart
+ * re-renders with the real width once it has been measured.
+ */
+export function xAxisLabels(
+  data: { date: Date; value: number }[],
+  xScale: TimeScale,
+  format: (date: Date) => string,
+  widthPx: number,
+  mode: XTickMode = "extremes",
+): XLabel[] {
+  const measured = Number.isFinite(widthPx) && widthPx > 0;
+  const toLabel = (key: string, date: Date): XLabel => {
+    const position = xScale(date);
+    return { key, label: format(date), position, shift: labelShift(position) };
+  };
+
+  let labels: XLabel[];
+  if (mode === "regular") {
+    labels =
+      data.length === 0
+        ? []
+        : xScale.ticks(responsiveTickCount(widthPx)).map((date) => toLabel(`t${+date}`, date));
+  } else {
+    labels = extremeIndices(data.map((d) => d.value)).map((index) =>
+      toLabel(`p${index}`, data[index].date),
+    );
+  }
+  labels = labels.filter((label) => Number.isFinite(label.position));
+  return measured ? dropCollidingLabels(labels, widthPx, mode !== "regular") : labels;
+}
+
+/**
+ * Track an element's width so the axes can adapt to the viewport. Returns a
+ * callback ref, so it also picks up an element that only mounts later (e.g.
+ * once data arrives after an empty first render).
+ */
 export function useElementWidth<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
+  const [element, setElement] = useState<T | null>(null);
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
-    const element = ref.current;
     if (!element) return;
     setWidth(element.getBoundingClientRect().width);
     if (typeof ResizeObserver === "undefined") return;
@@ -293,7 +393,7 @@ export function useElementWidth<T extends HTMLElement>() {
     });
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [element]);
 
-  return [ref, width] as const;
+  return [setElement, width] as const;
 }

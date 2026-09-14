@@ -70,6 +70,33 @@ def test_margin_left_prop_is_camel_cased(name):
     assert "marginLeft" in props
 
 
+X_TICK_CHARTS = [
+    "area_chart",
+    "line_chart",
+    "line_chart_curved",
+    "line_chart_labels_curved",
+    "line_chart_multiple",
+    "line_chart_pulse",
+    "line_chart_step",
+    "line_chart_stocks_curved",
+]
+
+
+@pytest.mark.parametrize("name", X_TICK_CHARTS)
+def test_x_ticks_prop_is_camel_cased(name):
+    props = str(getattr(rxc, name)(x_ticks="regular").render()["props"])
+    assert "xTicks" in props
+
+
+@pytest.mark.parametrize("name", X_TICK_CHARTS)
+def test_x_ticks_tsx_uses_shared_label_helper(name):
+    library = getattr(rxc, name)().library
+    parts = library.split("/components/")[1].split("/")
+    source = (PACKAGE / "components" / parts[0] / parts[-1]).read_text()
+    assert "xAxisLabels(" in source
+    assert "isMax" not in source
+
+
 @pytest.mark.parametrize("name", AXIS_CHARTS)
 def test_scale_props_are_camel_cased(name):
     props = str(getattr(rxc, name)(x_scale="log", y_scale="symlog").render()["props"])

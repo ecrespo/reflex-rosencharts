@@ -1,5 +1,6 @@
 /**
- * Axis regression check for the scatter charts (0.2.2).
+ * Axis regression check for the scatter charts (0.2.2) and the x labels of the
+ * line/area charts (0.2.4).
  *
  * Server-renders every scatter/line chart touched by the axis rewrite with the
  * clustered, unsorted, extreme-valued data that used to break them, and asserts
@@ -44,6 +45,26 @@ const REPOS = [
 ];
 const OUTLIER = { company: "ecrespo.github.io", revenue: 2609, value: 1451 };
 
+const DEV_STATS = Object.entries({
+  2024: [0, 0, 8, 0, 22, 8, 23, 12, 17, 19, 5, 8],
+  2025: [3, 10, 1, 0, 0, 9, 7, 21, 10, 41, 66, 34],
+  2026: [9, 94, 130, 59, 66, 193, 85, 61, 81],
+}).flatMap(([year, values]) =>
+  values.map((value, i) => ({ date: `${year}-${String(i + 1).padStart(2, "0")}-01T00:00:00`, value })),
+);
+
+// The time-series charts whose x labels come from `xAxisLabels` (0.2.4).
+const TIME_CHARTS = {
+  LineChart: "line/line_chart.tsx",
+  LineChartCurved: "line/line_chart_curved.tsx",
+  LineChartLabelsCurved: "line/line_chart_labels_curved.tsx",
+  LineChartMultiple: "line/line_chart_multiple.tsx",
+  LineChartStep: "line/line_chart_step.tsx",
+  LineChartStocksCurved: "line/line_chart_stocks_curved.tsx",
+  LineChartPulse: "line/line_chart_pulse.tsx",
+  AreaChart: "area/area_chart.tsx",
+};
+
 const work = mkdtempSync(join(tmpdir(), "rosencharts-axes-"));
 const entry = join(work, "entry.tsx");
 const bundle = join(work, "out.cjs");
@@ -54,11 +75,15 @@ import { ScatterChart } from ${JSON.stringify(join(COMPONENTS, "scatter/scatter_
 import { ScatterChartInteractive } from ${JSON.stringify(join(COMPONENTS, "scatter/scatter_chart_interactive.tsx"))};
 import { ScatterChartMulticlass } from ${JSON.stringify(join(COMPONENTS, "scatter/scatter_chart_multiclass.tsx"))};
 import { ScatterChartStocks } from ${JSON.stringify(join(COMPONENTS, "scatter/scatter_chart_stocks.tsx"))};
-import { LineChart } from ${JSON.stringify(join(COMPONENTS, "line/line_chart.tsx"))};
+${Object.entries(TIME_CHARTS).map(([name, file]) => `import { ${name} } from ${JSON.stringify(join(COMPONENTS, file))};`).join("\n")}
+import { scaleTime } from "d3";
+import { xAxisLabels } from ${JSON.stringify(join(COMPONENTS, "helpers/ChartAxis.tsx"))};
 
 const REPOS = ${JSON.stringify(REPOS)};
 const SHUFFLED = ${JSON.stringify([...REPOS].reverse())};
 const BIG = ${JSON.stringify([...REPOS, OUTLIER])};
+const DEV_STATS = ${JSON.stringify(DEV_STATS)};
+const TIED = [{ date: "2023-05-01", value: 1 }, { date: "2023-05-02", value: 9 }, { date: "2023-05-03", value: 4 }, { date: "2023-05-04", value: 9 }, { date: "2023-05-05", value: 2 }];
 
 const cases = {
   scatter_default: <ScatterChart />,
@@ -78,13 +103,37 @@ const cases = {
   line_big: <LineChart data={[{ date: "2023-05-01", value: 1200 }, { date: "2023-05-02", value: 400 }]} />,
   line_margin: <LineChart data={[{ date: "2023-05-01", value: 1200 }]} marginLeft={70} />,
 };
+for (const [name, Chart] of Object.entries({ ${Object.keys(TIME_CHARTS).join(", ")} })) {
+  cases[name + "_default"] = <Chart />;
+  cases[name + "_dev_stats"] = <Chart data={DEV_STATS} />;
+  cases[name + "_regular"] = <Chart data={DEV_STATS} xTicks="regular" />;
+  cases[name + "_tied"] = <Chart data={TIED} />;
+  cases[name + "_single"] = <Chart data={[{ date: "2023-05-01", value: 3 }]} />;
+  cases[name + "_empty"] = <Chart data={[]} />;
+}
+
+// The collision logic itself, at measured plot widths (SSR never measures).
+const pulseLabels = (data, width, mode) => {
+  const points = data.map((d) => ({ ...d, date: new Date(d.date) }));
+  const xScale = scaleTime().domain([points[0].date, points[points.length - 1].date]).range([0, 100]);
+  const format = (date) => date.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
+  return xAxisLabels(points, xScale, format, width, mode);
+};
+const labelSets = {};
+// 390px viewport -> ~256px plot; 1440px -> a ~1100px plot; 40px is too narrow for both ends.
+for (const width of [0, 40, 256, 320, 1100]) {
+  labelSets["dev_stats_" + width] = pulseLabels(DEV_STATS, width);
+  labelSets["regular_" + width] = pulseLabels(DEV_STATS, width, "regular");
+}
+labelSets.tied_1100 = pulseLabels(TIED, 1100);
+labelSets.single_300 = pulseLabels([{ date: "2023-05-01", value: 3 }], 300);
 
 const out = {};
 for (const [name, element] of Object.entries(cases)) {
   try { out[name] = renderToStaticMarkup(element); }
   catch (error) { out[name] = "ERROR: " + (error && error.message ? error.message : String(error)); }
 }
-console.log(JSON.stringify(out));
+console.log(JSON.stringify({ out, labelSets }));
 `);
 
 const esbuild = await import(join(WEB, "esbuild", "lib", "main.js"));
@@ -121,7 +170,7 @@ await (esbuild.default ?? esbuild).build({
   }],
 });
 
-const rendered = JSON.parse(execFileSync(process.execPath, [bundle], { encoding: "utf8", maxBuffer: 32 << 20 }));
+const { out: rendered, labelSets } = JSON.parse(execFileSync(process.execPath, [bundle], { encoding: "utf8", maxBuffer: 32 << 20 }));
 rmSync(work, { recursive: true, force: true });
 
 let failures = 0;
@@ -184,6 +233,50 @@ check("narrow log y axis keeps several labels", yLabels(rendered.scatter_log_nar
 check("narrow log y axis labels its maximum", Math.max(...numbers(yLabels(rendered.scatter_log_wide_decade))) >= 900, yLabels(rendered.scatter_log_wide_decade).join(" | "));
 check("symlog y axis labels its extremes", Math.max(...numbers(yLabels(rendered.scatter_symlog))) >= 1e6 && Math.min(...numbers(yLabels(rendered.scatter_symlog))) <= -1e6, yLabels(rendered.scatter_symlog).join(" | "));
 check("log scale is labelled", xLabels(rendered.scatter_log).filter(Boolean).length >= 3, xLabels(rendered.scatter_log).join(" | "));
+
+// ---- 0.2.4: x labels of the line/area charts ----
+const timeLabels = (html) => [...html.matchAll(/left:([-\d.e]+)%;top:100%;transform:translateX\(([-\d]+)%\)[^>]*>([^<]*)</g)]
+  .map((m) => ({ position: +m[1], shift: m[2], label: m[3] }));
+const labelText = (labels) => labels.map((l) => l.label).join(" | ");
+const CHAR = (c) => (",. \u00a0".includes(c) ? 4 : 8);
+const box = (l, width) => {
+  const w = [...l.label].reduce((n, c) => n + CHAR(c), 0);
+  const offset = l.shift === "0%" ? 0 : l.shift === "-100%" ? -1 : -0.5;
+  const left = (l.position / 100) * width + offset * w;
+  return [left, left + w];
+};
+const noOverlap = (labels, width) => labels.every((a, i) => labels.slice(i + 1).every((b) => {
+  const [al, ar] = box(a, width);
+  const [bl, br] = box(b, width);
+  return ar + 8 <= bl || al >= br + 8;
+}));
+const inside = (labels, width) => labels.every((l) => { const [left, right] = box(l, width); return left >= -0.5 && right <= width + 0.5; });
+
+for (const name of Object.keys(TIME_CHARTS)) {
+  const dev = timeLabels(rendered[name + "_dev_stats"]);
+  // SSR has no width: the fallback is first, last and the (single) maximum.
+  check(`${name}: unmeasured fallback labels first, last and max`, dev.length === 3 && dev[0].shift === "0" && dev[1].shift === "-100" && dev[2].shift === "-50", labelText(dev));
+  check(`${name}: tied maxima label only one point`, timeLabels(rendered[name + "_tied"]).length === 3, labelText(timeLabels(rendered[name + "_tied"])));
+  check(`${name}: single point labels once`, timeLabels(rendered[name + "_single"]).length === 1);
+  check(`${name}: regular ticks render`, timeLabels(rendered[name + "_regular"]).length >= 2, labelText(timeLabels(rendered[name + "_regular"])));
+  check(`${name}: default data keeps its labels`, timeLabels(rendered[name + "_default"]).length >= 2, labelText(timeLabels(rendered[name + "_default"])));
+  check(`${name}: empty data renders an empty container`, rendered[name + "_empty"] === '<div class="relative h-72 w-full"></div>');
+}
+
+const texts = (key) => labelSets[key].map((l) => l.label);
+check("x labels at 390px: 1/1 and 9/1 only", JSON.stringify(texts("dev_stats_256")) === JSON.stringify(["1/1", "9/1"]), texts("dev_stats_256").join(" | "));
+check("x labels at 1440px: 1/1, 9/1 and 6/1", JSON.stringify(texts("dev_stats_1100")) === JSON.stringify(["1/1", "9/1", "6/1"]), texts("dev_stats_1100").join(" | "));
+check("x labels too narrow for both ends keep only the first", JSON.stringify(texts("dev_stats_40")) === JSON.stringify(["1/1"]), texts("dev_stats_40").join(" | "));
+check("x labels unmeasured: fallback keeps all three", texts("dev_stats_0").length === 3);
+check("tied maxima: only the first is labelled", labelSets.tied_1100.length === 3 && labelSets.tied_1100[2].position === 25, JSON.stringify(labelSets.tied_1100));
+check("single point: one label inside the area", labelSets.single_300.length === 1 && inside(labelSets.single_300, 300));
+for (const width of [40, 256, 320, 1100]) {
+  for (const kind of ["dev_stats", "regular"]) {
+    const labels = labelSets[`${kind}_${width}`];
+    if (kind === "dev_stats" && width === 40) continue; // the lone first label may not fit at all
+    check(`${kind} @${width}px: no overlap, nothing outside`, labels.length >= 1 && noOverlap(labels, width) && inside(labels, width), labels.map((l) => l.label).join(" | "));
+  }
+}
 
 console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : failures + " CHECK(S) FAILED"}`);
 process.exit(failures === 0 ? 0 : 1);

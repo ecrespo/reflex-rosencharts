@@ -3,6 +3,9 @@ import { scaleTime, scaleLinear, max, line as d3_line, curveMonotoneX } from "d3
 import {
   axisMarginLeft,
   cssLength,
+  useElementWidth,
+  xAxisLabels,
+  type XTickMode,
 } from "$/public/external/reflex_rosencharts/components/helpers/chart_axis/ChartAxis.tsx";
 import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
@@ -25,10 +28,14 @@ const DEFAULT_DATA: Point[] = [
 export function LineChartCurved({
   data: rawData = DEFAULT_DATA,
   marginLeft: marginLeftProp,
+  xTicks = "extremes",
 }: {
   data?: Point[];
   marginLeft?: number | string;
+  xTicks?: XTickMode;
 }) {
+  // The plot width decides which x labels fit without overlapping.
+  const [plotRef, plotWidth] = useElementWidth<HTMLDivElement>();
   if (!rawData || rawData.length === 0) {
     return <div className="relative h-72 w-full" />;
   }
@@ -93,6 +100,7 @@ export function LineChartCurved({
 
       {/* Chart area */}
       <div
+        ref={plotRef}
         className="absolute inset-0
           h-[calc(100%-var(--marginTop)-var(--marginBottom))]
           w-[calc(100%-var(--marginLeft)-var(--marginRight))]
@@ -196,31 +204,26 @@ export function LineChartCurved({
 
         <div className="translate-y-2">
           {/* X Axis */}
-          {data.map((day, i) => {
-            const isFirst = i === 0;
-            const isLast = i === data.length - 1;
-            const isMax = day.value === Math.max(...data.map((d) => d.value));
-            if (!isFirst && !isLast && !isMax) return null;
-            return (
-              <div key={i} className="overflow-visible text-zinc-500">
-                <div
-                  style={{
-                    left: `${xScale(day.date)}%`,
-                    top: "100%",
-                    transform: `translateX(${
-                      i === 0 ? "0%" : i === data.length - 1 ? "-100%" : "-50%"
-                    })`,
-                  }}
-                  className="text-xs absolute"
-                >
-                  {day.date.toLocaleDateString("en-US", {
-                    month: "numeric",
-                    day: "numeric",
-                  })}
-                </div>
+          {xAxisLabels(
+            data,
+            xScale,
+            (date) => date.toLocaleDateString("en-US", { month: "numeric", day: "numeric" }),
+            plotWidth,
+            xTicks,
+          ).map((tick) => (
+            <div key={tick.key} className="overflow-visible text-zinc-500">
+              <div
+                style={{
+                  left: `${tick.position}%`,
+                  top: "100%",
+                  transform: `translateX(${tick.shift})`,
+                }}
+                className="text-xs absolute"
+              >
+                {tick.label}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>
