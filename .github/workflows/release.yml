@@ -63,8 +63,10 @@ jobs:
           persist-credentials: false
       # No cache on the release path.
       - uses: astral-sh/setup-uv@v6
+      # The .pyi step of `reflex component build` imports tests/ too, so the
+      # test group (pytest) must be installed as in ci.yml.
       - name: Install
-        run: uv sync --frozen --extra dev
+        run: uv sync --frozen --extra dev --group test
       - name: Verify tag matches package version
         env:
           TAG: ${{ needs.resolve.outputs.tag }}
