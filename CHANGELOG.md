@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI: GitHub Actions workflows for linting (ruff), tests (pytest), package
   build (`reflex component build` + `twine check`), the demo's production
   build with the axis regression checks, and security scans (gitleaks, bandit,
-  semgrep, pip-audit, dependency review, CodeQL).
+  semgrep, pip-audit, CodeQL).
 - Shared `components/helpers/ChartAxis.tsx` with the scale, tick, margin and
   tooltip-band helpers, registered like `ClientTooltip.tsx`.
 - Demo: a *Scatter axes on clustered data* section — 13 repositories by days
