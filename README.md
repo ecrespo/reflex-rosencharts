@@ -118,6 +118,13 @@ uv publish --token "$PYPI_TOKEN"
 uv publish --publish-url https://test.pypi.org/legacy/ --token "$TEST_PYPI_TOKEN"
 ```
 
+**Automated release:** bump `version` in `pyproject.toml` and `__version__`,
+add the `CHANGELOG.md` section, merge to `main` and push a `vX.Y.Z` tag. The
+`Release` workflow re-runs CI on the tag, builds, publishes to PyPI (secret
+`PYPI_API_TOKEN` in the `pypi` environment, or Trusted Publishing) and creates
+the GitHub release. An existing tag can be released from *Actions → Release →
+Run workflow*.
+
 See Reflex's [command reference](https://reflex.dev/docs/custom-components/command-reference/)
 and [publishing prerequisites](https://reflex.dev/docs/custom-components/prerequisites-for-publishing/).
 
