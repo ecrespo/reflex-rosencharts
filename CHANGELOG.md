@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Scatter and line charts: the automatic y-axis gutter was still too narrow.**
+  It assumed 7px per character and 10px of padding, but the label's `pr-2`
+  alone takes 8px, leaving 23px for `400` — which is 23.3px in Inter and
+  7.6–7.8px per digit in DejaVu Sans and Verdana. Labels ran into the plot
+  area, and labels with a break opportunity such as `-1,000` wrapped onto two
+  lines. The estimate now uses 8px per character (4px for `,` and `.`) plus
+  12px of padding (`400` → 36px, `1000` → 44px), and the y labels carry
+  `whitespace-nowrap`, so a font wider than expected can never wrap them.
+
 ## [0.2.2] - 2026-09-13
 
 ### Fixed

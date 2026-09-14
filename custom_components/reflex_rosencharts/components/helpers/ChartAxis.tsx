@@ -50,11 +50,19 @@ const MAX_INSET = 25;
 /** Hard stop for the tick loop; a sane axis never comes close. */
 const MAX_TICKS = 60;
 
-/** Approximate width in px of one `text-xs` character. */
-const CHAR_WIDTH = 7;
+/**
+ * Upper bound in px of one `text-xs` (12px) character. Measured in Chromium:
+ * a tabular digit is 6.7px in Arial, 7.6px in DejaVu Sans and 7.8px in Inter,
+ * so the old flat 7px left "400" wrapping onto two lines in the wider fonts.
+ */
+const CHAR_WIDTH = 8;
 
-/** `pr-2` on the y-axis label + a little breathing room. */
-const LABEL_PADDING = 10;
+/** Separators are roughly half a digit wide. */
+const NARROW_CHAR_WIDTH = 4;
+const NARROW_CHARS = new Set([",", ".", " ", " "]);
+
+/** `pr-2` (8px) on the y-axis label + a little breathing room. */
+const LABEL_PADDING = 12;
 
 function minMax(values: number[]): [number, number] | null {
   let lo = Infinity;
@@ -207,11 +215,22 @@ export function labelShift(position: number): string {
   return "-50%";
 }
 
-/** Left gutter wide enough for the longest y label, so it never wraps. */
+/** Estimated rendered width in px of a `text-xs` label. */
+function labelWidth(label: string): number {
+  let width = 0;
+  for (const char of label) width += NARROW_CHARS.has(char) ? NARROW_CHAR_WIDTH : CHAR_WIDTH;
+  return width;
+}
+
+/**
+ * Left gutter wide enough for the widest y label. The estimate errs on the wide
+ * side; the labels also carry `whitespace-nowrap`, so a font wider than expected
+ * spills into the padding instead of wrapping onto two lines.
+ */
 export function axisMarginLeft(labels: string[], minimum: number = 25): string {
-  let longest = 0;
-  for (const label of labels) longest = Math.max(longest, label.length);
-  return `${Math.max(minimum, Math.ceil(longest * CHAR_WIDTH) + LABEL_PADDING)}px`;
+  let widest = 0;
+  for (const label of labels) widest = Math.max(widest, labelWidth(label));
+  return `${Math.max(minimum, Math.ceil(widest) + LABEL_PADDING)}px`;
 }
 
 /** Normalize a margin prop: a number means px, a string is used as-is. */

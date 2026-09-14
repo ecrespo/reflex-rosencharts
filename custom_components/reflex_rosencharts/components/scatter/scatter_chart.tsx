@@ -111,7 +111,7 @@ export function ScatterChart({
               top: `${tick.position}%`,
               left: "0%",
             }}
-            className="absolute text-xs tabular-nums -translate-y-1/2 text-gray-500 w-full text-right pr-2"
+            className="absolute text-xs tabular-nums whitespace-nowrap -translate-y-1/2 text-gray-500 w-full text-right pr-2"
           >
             {tick.label}
           </div>
