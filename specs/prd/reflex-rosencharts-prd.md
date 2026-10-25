@@ -156,7 +156,7 @@ chart families with a single coherent Python API.
 
 ### Compatibility
 - Python ≥ 3.10 (project pinned to 3.13).
-- Reflex ≥ 0.9.x.
+- Reflex ≥ 0.10.0 (since 0.3.0).
 - Evergreen browsers (Chrome, Firefox, Safari, Edge).
 
 ### Observability

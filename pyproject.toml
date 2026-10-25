@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=78.1.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "reflex-rosencharts"
-version = "0.2.3"
+version = "0.3.0"
 description = "A Reflex custom component port of the rosencharts charting library (D3.js + Tailwind), usable from pure Python."
 readme = "README.md"
 license = { text = "MIT" }
@@ -12,7 +12,7 @@ requires-python = ">=3.13"
 authors = [{ name = "Ernesto Crespo", email = "ecrespo@gmail.com" }]
 keywords = ["reflex", "reflex-custom-components", "charts", "dataviz", "d3", "tailwind", "rosencharts"]
 dependencies = [
-    "reflex>=0.9.5.post2",
+    "reflex>=0.10.0",
     "reflex-hosting-cli>=0.1.66",
 ]
 classifiers = [

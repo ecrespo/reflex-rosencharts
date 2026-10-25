@@ -1,5 +1,10 @@
 import { scaleTime, scaleLinear, line as d3line, max, area as d3area, curveMonotoneX } from "d3";
 import { CSSProperties } from "react";
+import {
+  useElementWidth,
+  xAxisLabels,
+  type XTickMode,
+} from "$/public/external/reflex_rosencharts/components/helpers/chart_axis/ChartAxis.tsx";
 import { ClientTooltip, TooltipContent, TooltipTrigger } from "$/public/external/reflex_rosencharts/components/helpers/client_tooltip/ClientTooltip.tsx";
 
 type Point = { date: string; value: number };
@@ -33,7 +38,15 @@ const DEFAULT_DATA: Point[] = [
   { date: "2023-05-23", value: 11 },
 ];
 
-export function AreaChart({ data: rawData = DEFAULT_DATA }: { data?: Point[] }) {
+export function AreaChart({
+  data: rawData = DEFAULT_DATA,
+  xTicks = "extremes",
+}: {
+  data?: Point[];
+  xTicks?: XTickMode;
+}) {
+  // The plot width decides which x labels fit without overlapping.
+  const [plotRef, plotWidth] = useElementWidth<HTMLDivElement>();
   // Empty data => empty render, never throw (architecture DD/error policy).
   if (!rawData || rawData.length === 0) {
     return <div className="relative h-72 w-full" />;
@@ -80,6 +93,7 @@ export function AreaChart({ data: rawData = DEFAULT_DATA }: { data?: Point[] }) 
     >
       {/* Chart area */}
       <div
+        ref={plotRef}
         className="absolute inset-0
           h-[calc(100%-var(--marginTop)-var(--marginBottom))]
           w-[calc(100%-var(--marginLeft)-var(--marginRight))]
@@ -158,31 +172,26 @@ export function AreaChart({ data: rawData = DEFAULT_DATA }: { data?: Point[] }) 
 
         {/* X Axis */}
         <div className="translate-y-1">
-          {data.map((day, i) => {
-            const isFirst = i === 0;
-            const isLast = i === data.length - 1;
-            const isMax = day.value === Math.max(...data.map((d) => d.value));
-            if (!isFirst && !isLast && !isMax) return null;
-            return (
-              <div key={i} className="overflow-visible text-zinc-500">
-                <div
-                  style={{
-                    left: `${xScale(day.date)}%`,
-                    top: "100%",
-                    transform: `translateX(${
-                      i === 0 ? "0%" : i === data.length - 1 ? "-100%" : "-50%"
-                    })`,
-                  }}
-                  className="text-xs absolute whitespace-nowrap"
-                >
-                  {day.date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
+          {xAxisLabels(
+            data,
+            xScale,
+            (date) => date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            plotWidth,
+            xTicks,
+          ).map((tick) => (
+            <div key={tick.key} className="overflow-visible text-zinc-500">
+              <div
+                style={{
+                  left: `${tick.position}%`,
+                  top: "100%",
+                  transform: `translateX(${tick.shift})`,
+                }}
+                className="text-xs absolute whitespace-nowrap"
+              >
+                {tick.label}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
