@@ -192,7 +192,7 @@ TSX, its example page in the gallery, and its tests.
 | F8-02 | README with installation, quickstart, and snippet gallery | — | ☐ |
 | F8-03 | MIT LICENSE + attribution to rosencharts (Filsommer) | mandatory | ☐ |
 | F8-04 | CI (GitHub Actions): lint + tests + build | — | ☐ |
-| F8-05 | Custom component build (`reflex component build` / Hatch) | — | ☐ |
+| F8-05 | Custom component build (`.pyi` generation + `uv build`; `reflex component build` was removed in Reflex 0.10) | — | ☐ |
 | F8-06 | Publish `0.1.0` to PyPI (TestPyPI first) | final gate | ☐ |
 
 **Done:** `pip install reflex-rosencharts` works; CI green; release tagged.

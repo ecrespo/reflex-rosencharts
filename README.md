@@ -70,6 +70,9 @@ pip install reflex-rosencharts
 uv add reflex-rosencharts
 ```
 
+Requires Python ≥ 3.13 and **Reflex ≥ 0.10.0** (since 0.3.0; use
+`reflex-rosencharts<0.3` on Reflex 0.9).
+
 ## Project layout
 
 This repo is a [Reflex custom component](https://reflex.dev/docs/custom-components/overview/):
@@ -104,15 +107,20 @@ node scripts/check_scatter_axes.mjs
 
 ### Build & publish (custom component)
 
+Reflex 0.10 removed `reflex component build`, so the build is two steps:
+
 ```bash
-# 1. Build the sdist + wheel into dist/ (PYTHONPATH=. lets the .pyi step resolve
-#    the package under custom_components/).
-PYTHONPATH=. uv run reflex component build
+# 1. Generate the .pyi stubs (PYTHONPATH=. lets the generator resolve the
+#    package under custom_components/).
+PYTHONPATH=. uv run python -m reflex_base.utils.pyi_generator custom_components/reflex_rosencharts
 
-# 2. Sanity-check the artifacts.
-uv run twine check dist/*
+# 2. Build the sdist + wheel into dist/.
+uv build
 
-# 3. Publish to PyPI with uv (needs a PyPI API token):
+# 3. Sanity-check the artifacts.
+uv run twine check --strict dist/*
+
+# 4. Publish to PyPI with uv (needs a PyPI API token):
 uv publish --token "$PYPI_TOKEN"
 # …or to TestPyPI first:
 uv publish --publish-url https://test.pypi.org/legacy/ --token "$TEST_PYPI_TOKEN"
@@ -125,8 +133,7 @@ add the `CHANGELOG.md` section, merge to `main` and push a `vX.Y.Z` tag. The
 the GitHub release. An existing tag can be released from *Actions → Release →
 Run workflow*.
 
-See Reflex's [command reference](https://reflex.dev/docs/custom-components/command-reference/)
-and [publishing prerequisites](https://reflex.dev/docs/custom-components/prerequisites-for-publishing/).
+See Reflex's [publishing prerequisites](https://reflex.dev/docs/custom-components/prerequisites-for-publishing/).
 
 ## Specifications (SDD)
 

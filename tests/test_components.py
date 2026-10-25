@@ -55,7 +55,8 @@ def test_chart_builds_with_defaults(name):
 @pytest.mark.parametrize("name", CHARTS)
 def test_chart_library_points_to_existing_tsx(name):
     component = getattr(rxc, name)()
-    library = component.library
+    # Reflex 0.10 appends a cache-busting query (``?v=<hash>``) to asset paths.
+    library = component.library.split("?", 1)[0]
     assert library.startswith("$/public/external/reflex_rosencharts/components/")
     assert library.endswith(".tsx")
     # "$/public/external/.../components/<family>/<module>/<File>.tsx"
@@ -90,7 +91,8 @@ def test_x_ticks_prop_is_camel_cased(name):
 
 @pytest.mark.parametrize("name", X_TICK_CHARTS)
 def test_x_ticks_tsx_uses_shared_label_helper(name):
-    library = getattr(rxc, name)().library
+    # Drop the Reflex 0.10 cache-busting query (``?v=<hash>``).
+    library = getattr(rxc, name)().library.split("?", 1)[0]
     parts = library.split("/components/")[1].split("/")
     source = (PACKAGE / "components" / parts[0] / parts[-1]).read_text()
     assert "xAxisLabels(" in source

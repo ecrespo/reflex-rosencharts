@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-25
+
+### Changed
+
+- **Requires Reflex 0.10.0 or newer** (`reflex>=0.10.0`, was `>=0.9.5.post2`).
+  The chart API is unchanged; projects still on Reflex 0.9 should pin
+  `reflex-rosencharts<0.3`. Reflex 0.10 appends a cache-busting `?v=<hash>`
+  query to the components' `library` asset path; the frontend resolves it as
+  before.
+- **Build without `reflex component build`**, which Reflex 0.10 removed: the
+  `.pyi` stubs are generated with `reflex_base.utils.pyi_generator` and the
+  sdist + wheel are built with `uv build`, in CI, in the release workflow and
+  in the README instructions.
+- Build backend requires `setuptools>=78.1.1`.
+- **CI on Node 24:** every JavaScript action is forced onto the Node 24
+  runtime (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`), the demo job builds with
+  Node 24, and the actions are updated (`actions/checkout@v7`,
+  `actions/setup-node@v7`, `actions/upload-artifact@v7`,
+  `actions/download-artifact@v8`, `astral-sh/setup-uv@v10.3.2`,
+  `gitleaks/gitleaks-action@v3`, `github/codeql-action@v4`).
+- Dependencies refreshed in `uv.lock`.
+
 ## [0.2.4] - 2026-09-13
 
 ### Fixed
@@ -123,6 +145,7 @@ for the axis labels, which are now regular ticks.
 
 - Documentation translated to English; packaging metadata for PyPI.
 
+[0.3.0]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/ecrespo/reflex-rosencharts/compare/v0.2.1...v0.2.2
