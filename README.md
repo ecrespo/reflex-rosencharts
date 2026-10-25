@@ -99,9 +99,11 @@ uv run reflex run                  # start the demo app / gallery
 Axis regression check for the scatter and line charts (server-renders them with
 clustered, unsorted and extreme-valued data and asserts the tick, margin and
 clipping guarantees). It uses the frontend dependencies Reflex installs on the
-first `reflex run`:
+first `reflex run`, plus esbuild (Reflex 0.10 builds with Vite 8 / rolldown and
+no longer installs it):
 
 ```bash
+npm install --no-save --prefix scripts esbuild
 node scripts/check_scatter_axes.mjs
 ```
 

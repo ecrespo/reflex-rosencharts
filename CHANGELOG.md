@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   sdist + wheel are built with `uv build`, in CI, in the release workflow and
   in the README instructions.
 - Build backend requires `setuptools>=78.1.1`.
+- **Axis regression script** (`scripts/check_scatter_axes.mjs`): Reflex 0.10
+  builds with Vite 8 / rolldown and no longer installs esbuild in
+  `.web/node_modules`, so the script also looks in `scripts/node_modules`
+  (`npm install --no-save --prefix scripts esbuild`), as the CI demo job does.
 - **CI on Node 24:** every JavaScript action is forced onto the Node 24
   runtime (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`), the demo job builds with
   Node 24, and the actions are updated (`actions/checkout@v7`,

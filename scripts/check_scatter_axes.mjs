@@ -11,7 +11,10 @@
  *
  * Usage:  node scripts/check_scatter_axes.mjs
  * Needs the frontend dependencies Reflex installs on the first `reflex run`
- * (.web/node_modules). Exits non-zero on the first failed assertion.
+ * (.web/node_modules) plus esbuild. Reflex 0.10 builds with Vite 8 / rolldown
+ * and no longer installs esbuild, so install it next to this script:
+ *   npm install --no-save --prefix scripts esbuild
+ * Exits non-zero on the first failed assertion.
  */
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, existsSync, rmSync } from "node:fs";
@@ -25,6 +28,15 @@ const COMPONENTS = join(ROOT, "custom_components", "reflex_rosencharts", "compon
 
 if (!existsSync(WEB)) {
   console.error("Missing .web/node_modules — run `reflex run` once so Reflex installs the frontend deps.");
+  process.exit(2);
+}
+
+// .web/node_modules only has esbuild on Reflex < 0.10; otherwise use scripts/node_modules.
+const ESBUILD = [WEB, join(ROOT, "scripts", "node_modules")]
+  .map((dir) => join(dir, "esbuild", "lib", "main.js"))
+  .find((path) => existsSync(path));
+if (!ESBUILD) {
+  console.error("Missing esbuild — run `npm install --no-save --prefix scripts esbuild`.");
   process.exit(2);
 }
 
@@ -136,7 +148,7 @@ for (const [name, element] of Object.entries(cases)) {
 console.log(JSON.stringify({ out, labelSets }));
 `);
 
-const esbuild = await import(join(WEB, "esbuild", "lib", "main.js"));
+const esbuild = await import(ESBUILD);
 await (esbuild.default ?? esbuild).build({
   entryPoints: [entry],
   bundle: true,

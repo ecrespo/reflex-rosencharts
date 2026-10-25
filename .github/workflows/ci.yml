@@ -113,5 +113,8 @@ jobs:
         run: uv run reflex export --frontend-only --no-zip --env prod
       - name: Demo build produced an index page
         run: test -f .web/build/client/index.html
+      - name: Install esbuild for the axis checks
+        # Reflex 0.10 builds with Vite 8 / rolldown and no longer ships esbuild.
+        run: npm install --no-save --no-audit --no-fund --prefix scripts esbuild@0.28.2
       - name: Scatter/line axis regression checks
         run: node scripts/check_scatter_axes.mjs
